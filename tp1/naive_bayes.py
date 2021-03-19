@@ -1,12 +1,6 @@
 import pandas as pd
 import numpy as np
 
-
-
-
-
-
-
 class NaiveBayesClassifier:
 
     def __init__(self):
@@ -48,11 +42,8 @@ class NaiveBayesClassifier:
                         
         return df
 
-
-
-df = pd.read_excel("data/PreferenciasBritanicos.xlsx")
+train_data = pd.read_excel("data/PreferenciasBritanicos.xlsx")
 nb = NaiveBayesClassifier()
-nb.train(df, "Nacionalidad")
 
 test_data = [
     [1,0,1,1,0], 
@@ -60,6 +51,11 @@ test_data = [
 ]
 test_data = pd.DataFrame(test_data, columns=["scones", "cerveza", "wiskey","avena","futbol"])
 
+
+print(train_data)
+print(test_data)
+
+nb.train(train_data, "Nacionalidad")
 prediction = nb.predict(test_data)
 
 print(prediction)
