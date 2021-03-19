@@ -30,10 +30,12 @@ print("Date from: {} to {}".format(minDate.strftime("%d/%m"), maxDate.strftime("
 print(f'{Fore.RED}{df.median()}')
 
 # Generacion de histogramas:
-for v in variables:
-    df.hist(v)
-    plt.savefig("images/hist_{}.png".format(v))
-    plt.clf()
+df.hist(bins='fd')
+plt.show()
+# for v in variables:
+#     df.hist(v,bins='auto')
+#     plt.savefig("images/hist_{}.png".format(v))
+#     plt.clf()
 
 # Generacion de boxplot
 plt.clf()
