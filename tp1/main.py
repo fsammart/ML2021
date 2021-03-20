@@ -11,10 +11,10 @@ test_data = [
 test_data = pd.DataFrame(test_data, columns=["scones", "cerveza", "wiskey","avena","futbol"])
 
 
-print("Train data\n", train_data)
-print("Test data\n", test_data)
+print("*** Train data ***\n\n", train_data, "\n")
+print("*** Test data ***\n\n", test_data, "\n")
 
 nb.train(train_data, "Nacionalidad")
 prediction = nb.predict(test_data)
 
-print("Prediction\n", prediction)
+print("*** Prediction ***\n\n", prediction)

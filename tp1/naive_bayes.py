@@ -8,11 +8,20 @@ class NaiveBayesClassifier:
 
     def train(self, df, group_column_name, apply_laplace=True):
         self.group_column_name = group_column_name
+        # Columna que indica la clasificacion del registro
         group_column = df[group_column_name]
+        
+        # Clases para clasificacion. Ej: I, E
         groups = group_column.unique()
+
+        # Cuantos registros hay para cada clase
         group_count = group_column.value_counts()
+       
         group_frequency = group_count / len(df)
+        
+        # Agregacion por cada atributo
         agg = df.groupby(group_column_name).agg('sum')
+        
         group_count.index.name = group_column_name
 
         # Frecuencias relativas (SIN LAPLACE)
@@ -41,21 +50,3 @@ class NaiveBayesClassifier:
 
                         
         return df
-
-train_data = pd.read_excel("data/PreferenciasBritanicos.xlsx")
-nb = NaiveBayesClassifier()
-
-test_data = [
-    [1,0,1,1,0], 
-    [0,1,1,0,1]
-]
-test_data = pd.DataFrame(test_data, columns=["scones", "cerveza", "wiskey","avena","futbol"])
-
-
-print(train_data)
-print(test_data)
-
-nb.train(train_data, "Nacionalidad")
-prediction = nb.predict(test_data)
-
-print(prediction)
