@@ -42,10 +42,9 @@ plt.clf()
 df.boxplot()
 plt.savefig("images/boxplot.png")
 
-
+p = 0.2
 #  TODO: Ver como mostramos la division de test y train en el ppt
-train, test = train_test_split(df, test_size=0.2)
+train, test = train_test_split(df, test_size=p)
 # print(train.shape)
 # print(test)
-
 
