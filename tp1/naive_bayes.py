@@ -24,13 +24,14 @@ class NaiveBayesClassifier:
         
         group_count.index.name = group_column_name
 
-        # Frecuencias relativas (SIN LAPLACE)
-        relative_freqs = agg.div(group_count, axis='index')
-
-        # Frecuencias relativas (CON LAPLACE)
-        # TODO: Cambiar el "+2" y el "+1" por el 'k' de la formula
-        agg2 = agg + 1
-        relative_freqs_laplace = agg2.div(group_count + 2, axis='index')
+        if not apply_laplace:
+            # Frecuencias relativas (SIN LAPLACE)
+            relative_freqs = agg.div(group_count, axis='index')
+        else:
+            # Frecuencias relativas (CON LAPLACE)
+            # TODO: Cambiar el "+2" y el "+1" por el 'k' de la formula
+            agg2 = agg + 1
+            relative_freqs_laplace = agg2.div(group_count + 2, axis='index')
 
         self.trained = True
         self.relative_freqs = relative_freqs_laplace if apply_laplace else relative_freqs
