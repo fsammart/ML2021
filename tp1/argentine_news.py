@@ -108,20 +108,34 @@ class Bayes:
         # Processes news and will dynamically add categories to dictionary
         [self.process(headline, category) for headline, category in
          zip(dataframe['titular'], dataframe['categoria'])]
+        print(f"Finished processing {len(dataframe.index)} news.")
 
     def conclude_learning(self):
         [category.conclude_learning(len(argentine_news.index)) for category in self.categories.values()]
         del self.categories[np.nan]
+        print("Naive bayes algorithm learning concluded.")
 
     def test(self, headline, real_category):
         results = {name: category.get_prod(headline) for name, category in self.categories.items()}
-        return results, max(results.items(), key=operator.itemgetter(1))[0]
+        winner = max(results.items(), key=operator.itemgetter(1))[0]
+        return results, winner, winner == real_category
+
+    def test_batch(self, test_df):
+        hits = 0
+        verbose = ''
+        for idx in range(len(test_df)):
+            row = test_news.iloc[idx]
+            headline = row.titular
+            real_category = row.categoria
+            results, winner, success = self.test(headline, real_category)
+            hits += 1 if success else 0
+            verbose += f'** Winner: {winner}, Real: {real_category} **\n'
+        return hits, verbose
 
 
 ########################
 # RUN LEARNING PROCESS #
 ########################
-
 
 # TODO: for now use appearances until resolving problems with probabilities
 bayes = Bayes(mode=APPEARANCES)
@@ -140,16 +154,14 @@ bayes.conclude_learning()
 # RUN TEST CASES #
 ##################
 
-test_news = argentine_news.head(1)
+print("Running some tests for bayes algorithm...")
 
-test_headline = test_news['titular'][0]
-test_real_category = test_news['categoria'][0]
-bayes_results, winner_category = bayes.test(test_headline, test_real_category)
+test_items = 15
 
-for category, result in bayes_results.items():
-    print(f'{category}: {result}')
+test_news = argentine_news.sample(n=test_items)
 
-print("*** WINNER CATEGORY ***")
-print(winner_category)
-print("*** REAL CATEGORY ***")
-print(test_real_category)
+result_hits, result_verbose = bayes.test_batch(test_news)
+
+print(f'HITS: {result_hits}')
+print("--------------")
+print(result_verbose)
