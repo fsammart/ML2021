@@ -87,7 +87,7 @@ class Category:
                 prod = prod * self.non_existing_word_probability if token not in self.relative_frequencies.keys() \
                     else self.relative_frequencies.get(token)
 
-        return prod
+        return prod * self.probability
 
     def __str__(self):
         return f'{self.name} - P(x=self)={self.probability}'
