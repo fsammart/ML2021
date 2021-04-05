@@ -72,16 +72,19 @@ class Category:
 
         if self.mode == APPEARANCES:
             distinct_tokens = list(set(tokens))
+            not_in_category = 0
 
-            for word, probability in self.relative_frequencies.items():
-                prod = prod * probability if word in distinct_tokens else prod * (1-probability)
+            for word in distinct_tokens:
+                probability = self.relative_frequencies.get(word) if word in self.relative_frequencies.keys() else 1
+                if probability == 1: not_in_category += 1
+                prod = prod * probability
 
             # words that are not in this category
             prod = prod * math.pow(
-                self.non_existing_word_probability,
-                # np.setdiff1d returns unique values in left list that are not in right list
-                len(np.setdiff1d(distinct_tokens, self.relative_frequencies.keys()))
+                self.non_existing_word_probability, not_in_category
             )
+
+        # If self.mode === QUANTITY
         else:
             for token in tokens:
                 prod = prod * self.non_existing_word_probability if token not in self.relative_frequencies.keys() \
@@ -112,7 +115,6 @@ class Bayes:
 
     def conclude_learning(self):
         [category.conclude_learning(len(argentine_news.index)) for category in self.categories.values()]
-        del self.categories[np.nan]
         print("Naive bayes algorithm learning concluded.")
 
     def test(self, headline, real_category):
@@ -124,13 +126,19 @@ class Bayes:
         hits = 0
         verbose = ''
         for idx in range(len(test_df)):
-            row = test_news.iloc[idx]
+            row = test_df.iloc[idx]
             headline = row.titular
             real_category = row.categoria
             results, winner, success = self.test(headline, real_category)
             hits += 1 if success else 0
             verbose += f'** Winner: {winner}, Real: {real_category} **\n'
         return hits, verbose
+
+    def __str__(self):
+        desc = ''
+        for name, category in self.categories.items():
+            desc += f'{name}: {category.probability}\n'
+        return desc
 
 
 ########################
@@ -141,14 +149,17 @@ class Bayes:
 bayes = Bayes(mode=APPEARANCES)
 
 argentine_news = pd.read_excel('data/Noticias_argentinas.xlsx')
-# checked that sum of categories is the same as count of registers
-# print(len(argentine_news.index))
+
+selected_categories = ['Deportes', 'Salud', 'Economia', 'Entretenimiento']
+argentine_news = argentine_news.loc[argentine_news['categoria'].isin(selected_categories)]
 
 # Processes all news
 bayes.process_data(argentine_news)
 
 # Method MUST BE called when finishing processing. Computes information for prediction with naives bayes
 bayes.conclude_learning()
+
+#print(bayes)
 
 ##################
 # RUN TEST CASES #
