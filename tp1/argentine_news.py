@@ -149,9 +149,11 @@ class Bayes:
 bayes = Bayes(mode=APPEARANCES)
 
 argentine_news = pd.read_excel('data/Noticias_argentinas.xlsx')
+# we want to filter news without category
+argentine_news = argentine_news.loc[argentine_news['categoria'].notnull()]
 
-selected_categories = ['Deportes', 'Salud', 'Economia', 'Entretenimiento']
-argentine_news = argentine_news.loc[argentine_news['categoria'].isin(selected_categories)]
+# selected_categories = ['Deportes', 'Salud', 'Economia', 'Entretenimiento']
+# argentine_news = argentine_news.loc[argentine_news['categoria'].isin(selected_categories)]
 
 # Processes all news
 bayes.process_data(argentine_news)
@@ -159,7 +161,7 @@ bayes.process_data(argentine_news)
 # Method MUST BE called when finishing processing. Computes information for prediction with naives bayes
 bayes.conclude_learning()
 
-#print(bayes)
+# print(bayes)
 
 ##################
 # RUN TEST CASES #
@@ -167,7 +169,7 @@ bayes.conclude_learning()
 
 print("Running some tests for bayes algorithm...")
 
-test_items = 15
+test_items = 50
 
 test_news = argentine_news.sample(n=test_items)
 
@@ -175,4 +177,4 @@ result_hits, result_verbose = bayes.test_batch(test_news)
 
 print(f'HITS: {result_hits}')
 print("--------------")
-print(result_verbose)
+# print(result_verbose)
