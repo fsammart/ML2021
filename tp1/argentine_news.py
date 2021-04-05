@@ -148,15 +148,27 @@ class Bayes:
 # TODO: for now use appearances until resolving problems with probabilities
 bayes = Bayes(mode=APPEARANCES)
 
+# Pre processing Argentine News dataset
+
 argentine_news = pd.read_excel('data/Noticias_argentinas.xlsx')
 # we want to filter news without category
 argentine_news = argentine_news.loc[argentine_news['categoria'].notnull()]
 
-# selected_categories = ['Deportes', 'Salud', 'Economia', 'Entretenimiento']
-# argentine_news = argentine_news.loc[argentine_news['categoria'].isin(selected_categories)]
+# when commenting this, success rate will be much lower
+selected_categories = ['Deportes', 'Salud', 'Economia', 'Entretenimiento']
+argentine_news = argentine_news.loc[argentine_news['categoria'].isin(selected_categories)]
+
+print("Finished pre processing.")
+
+# Split into train and test
+msk = np.random.rand(len(argentine_news)) < 0.8
+train = argentine_news[msk]
+test = argentine_news[~msk]
+
+print("Finished train-test splitting.")
 
 # Processes all news
-bayes.process_data(argentine_news)
+bayes.process_data(train)
 
 # Method MUST BE called when finishing processing. Computes information for prediction with naives bayes
 bayes.conclude_learning()
@@ -169,12 +181,11 @@ bayes.conclude_learning()
 
 print("Running some tests for bayes algorithm...")
 
-test_items = 50
+result_hits, result_verbose = bayes.test_batch(test)
 
-test_news = argentine_news.sample(n=test_items)
+print()
+print(f'HITS: {result_hits}/{len(test)}')
+print(f'Success rate: {result_hits/len(test)}')
 
-result_hits, result_verbose = bayes.test_batch(test_news)
-
-print(f'HITS: {result_hits}')
-print("--------------")
+print()
 # print(result_verbose)
