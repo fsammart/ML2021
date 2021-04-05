@@ -3,11 +3,16 @@ import numpy as np
 import operator
 import pandas as pd
 
+from plots import plot_confusion_matrix
+
 # This mode computes only if the word appeared in the news or not
 APPEARANCES = 0
 # This mode computes how many times the word appeared for that category
 QUANTITY = 1
 
+CROSSED_VALIDATION = 0
+BOOTSTRAP = 1
+RANDOM = 2
 
 class Category:
 
@@ -99,8 +104,16 @@ class Category:
 class Bayes:
 
     def __init__(self, mode=APPEARANCES):
+        # General
         self.categories = {}
         self.mode = mode
+
+        # Metrics
+        self.confusion_matrix = None
+        self.true_positives = None
+        self.true_negatives = None
+        self.false_positives = None
+        self.false_negatives = None
 
     def process(self, headline, category):
         if category not in self.categories.keys():
@@ -125,11 +138,21 @@ class Bayes:
     def test_batch(self, test_df):
         hits = 0
         verbose = ''
+
+        # key is real category and values has columns with results
+        self.confusion_matrix = {
+            category: {category: 0 for category in self.categories.keys()}
+            for category in self.categories.keys()
+        }
+
         for idx in range(len(test_df)):
             row = test_df.iloc[idx]
             headline = row.titular
             real_category = row.categoria
+
             results, winner, success = self.test(headline, real_category)
+            self.confusion_matrix[real_category][winner] = self.confusion_matrix.get(real_category).get(winner) + 1
+
             hits += 1 if success else 0
             verbose += f'** Winner: {winner}, Real: {real_category} **\n'
         return hits, verbose
@@ -139,6 +162,21 @@ class Bayes:
         for name, category in self.categories.items():
             desc += f'{name}: {category.probability}\n'
         return desc
+
+
+def split_dataset(dataframe, mode=RANDOM, percentage=0.8):
+    train_df = None
+    test_df = None
+    if mode == CROSSED_VALIDATION:
+        pass  # TODO: implement
+    elif mode == BOOTSTRAP:
+        pass  # TODO: implement
+    else:
+        msk = np.random.rand(len(dataframe)) < percentage
+        train_df = dataframe[msk]
+        test_df = dataframe[~msk]
+
+    return train_df, test_df
 
 
 ########################
@@ -161,9 +199,7 @@ argentine_news = argentine_news.loc[argentine_news['categoria'].isin(selected_ca
 print("Finished pre processing.")
 
 # Split into train and test
-msk = np.random.rand(len(argentine_news)) < 0.8
-train = argentine_news[msk]
-test = argentine_news[~msk]
+train, test = split_dataset(argentine_news)
 
 print("Finished train-test splitting.")
 
@@ -183,9 +219,9 @@ print("Running some tests for bayes algorithm...")
 
 result_hits, result_verbose = bayes.test_batch(test)
 
-print()
-print(f'HITS: {result_hits}/{len(test)}')
-print(f'Success rate: {result_hits/len(test)}')
+print(f'\nHITS: {result_hits}/{len(test)}')
+print(f'Success rate: {result_hits/len(test)}\n')
 
-print()
 # print(result_verbose)
+
+plot_confusion_matrix(bayes.confusion_matrix)
