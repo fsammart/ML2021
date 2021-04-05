@@ -14,6 +14,7 @@ CROSSED_VALIDATION = 0
 BOOTSTRAP = 1
 RANDOM = 2
 
+
 class Category:
 
     def __init__(self, name, mode=APPEARANCES):
@@ -67,16 +68,16 @@ class Category:
 
         # 3. Computes non existing word probability for words in test headlines that are
         # not in dictionary
-        self.non_existing_word_probability =  self.get_rf(0)
+        self.non_existing_word_probability = self.get_rf(0)
 
     # TODO: replace this when deciding what to do with probabilities
     def get_prod(self, headline):
         tokens = headline.lower().split()
+        distinct_tokens = list(set(tokens))
 
         prod = 1
 
         if self.mode == APPEARANCES:
-            distinct_tokens = list(set(tokens))
             not_in_category = 0
 
             for word in distinct_tokens:
@@ -110,10 +111,6 @@ class Bayes:
 
         # Metrics
         self.confusion_matrix = None
-        self.true_positives = None
-        self.true_negatives = None
-        self.false_positives = None
-        self.false_negatives = None
 
     def process(self, headline, category):
         if category not in self.categories.keys():
@@ -131,9 +128,15 @@ class Bayes:
         print("Naive bayes algorithm learning concluded.")
 
     def test(self, headline, real_category):
-        results = {name: category.get_prod(headline) for name, category in self.categories.items()}
-        winner = max(results.items(), key=operator.itemgetter(1))[0]
-        return results, winner, winner == real_category
+        prod_results = {name: category.get_prod(headline) for name, category in self.categories.items()}
+
+        winner = max(prod_results.items(), key=operator.itemgetter(1))[0]
+
+        probability_of_register = sum(prod_results.values())
+        probability_results = {name: prod/probability_of_register for name, prod in prod_results.items()}
+
+        # both prod results and probability results are dictionary
+        return prod_results, probability_results, winner, winner == real_category
 
     def test_batch(self, test_df):
         hits = 0
@@ -150,7 +153,7 @@ class Bayes:
             headline = row.titular
             real_category = row.categoria
 
-            results, winner, success = self.test(headline, real_category)
+            results, probabilities, winner, success = self.test(headline, real_category)
             self.confusion_matrix[real_category][winner] = self.confusion_matrix.get(real_category).get(winner) + 1
 
             hits += 1 if success else 0
@@ -183,8 +186,7 @@ def split_dataset(dataframe, mode=RANDOM, percentage=0.8):
 # RUN LEARNING PROCESS #
 ########################
 
-# TODO: for now use appearances until resolving problems with probabilities
-bayes = Bayes(mode=APPEARANCES)
+bayes = Bayes(mode=QUANTITY)
 
 # Pre processing Argentine News dataset
 
@@ -199,7 +201,7 @@ argentine_news = argentine_news.loc[argentine_news['categoria'].isin(selected_ca
 print("Finished pre processing.")
 
 # Split into train and test
-train, test = split_dataset(argentine_news)
+train, test = split_dataset(argentine_news, percentage=0.99)
 
 print("Finished train-test splitting.")
 
