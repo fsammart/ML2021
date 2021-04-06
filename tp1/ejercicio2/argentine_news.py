@@ -181,16 +181,119 @@ def split_dataset(dataframe, mode=RANDOM, percentage=0.8):
 
     return train_df, test_df
 
+def get_metrics(confusion_matrix):
+    metrics = {k:{} for k in confusion_matrix.keys()}
+
+    for metric in metrics.keys():
+        tp = 0
+        fp = 0
+        tn = 0
+        fn = 0
+
+
+        for real,row in confusion_matrix.items():
+            for predicted, value in row.items():
+                if real == predicted == metric:
+                    tp += value
+                elif predicted == metric and real != metric: # se predijo true pero el real es distinto
+                    fp += value
+                elif real == metric and predicted != metric: #se predijo false pero era true
+                    fn += value
+                elif real != metric and predicted != metric: # se predijo false y era false
+                    tn += value
+ 
+        accuracy = (tp + tn) / (tp + tn + fp + fn)
+        precision = tp / (tp+fp)
+        recall = tp / (tp + fn)
+
+        f1 = (2*precision*recall) / (precision + recall)
+        tvp = tp /  (tp+fn)
+        tfp = fp / (fp + tn)
+
+        metrics[metric] = {
+            "acc": accuracy,
+            "prc": precision,
+            "rec": recall,
+            "f1": f1,
+            "tvp": tvp,
+            "tfp": tfp,
+
+            "tp": tp,
+            "tn": tn,
+            "fp": fp,
+            "fn": fn
+        }
+
+    avgAcc = 0
+    avgPrc = 0
+    avgRec = 0
+    avgF1 = 0
+    avgTvp = 0
+    avgTfp = 0
+    for k,v in metrics.items():
+        avgAcc += v["acc"]  / len(metrics.items())
+        avgPrc += v["prc"] / len(metrics.items())
+        avgRec += v["rec"] / len(metrics.items())
+        avgF1  += v["f1"] / len(metrics.items())
+        avgTvp += v["tvp"] / len(metrics.items())
+        avgTfp += v["tfp"] / len(metrics.items())
+
+    metrics["Promedio"]  = {
+        "acc": avgAcc,
+        "prc": avgPrc,
+        "rec": avgRec,
+        "f1": avgF1,
+        "tvp": avgTvp,
+        "tfp": avgTfp,
+        "tp": "",
+        "tn": "",
+        "fp": "",
+        "fn": ""
+
+    }
+
+    return metrics
+
+
+def print_metrics(metrics):
+    cols = [x for x in metrics[next(iter(metrics))].keys()]
+
+    max_category_size = max(len(x) for x in metrics.keys())
+    max_header_size = max(len(x) for x in cols)
+
+    print("".ljust(max_category_size + 5), end="")
+    for c in cols:
+        print("\t", c.ljust(max_header_size),  end="")
+    print()
+    
+    for cat,cat_metrics in metrics.items():
+        if cat != "Promedio":
+            print(cat.ljust(max_category_size), "\t", end="")
+            for metric in cols:
+                if(type(cat_metrics[metric]) == float):
+                    print("{:.3f}".format(cat_metrics[metric]).ljust(max_header_size), "\t", end='')
+                else:
+                    print(str(cat_metrics[metric]).ljust(max_header_size), "\t", end='')
+        print()
+    print()
+    print("Promedio".ljust(max_category_size), "\t", end="")
+    for metric in cols:
+        if(type(cat_metrics[metric]) == float):
+            print("{:.3f}".format(metrics["Promedio"][metric]).ljust(max_header_size), "\t", end='')
+        else:
+            print(str(metrics["Promedio"][metric]).ljust(max_header_size), "\t", end='')
+    print()
+        
 
 ########################
 # RUN LEARNING PROCESS #
 ########################
 
-bayes = Bayes(mode=QUANTITY)
+bayes = Bayes(mode=APPEARANCES)
 
 # Pre processing Argentine News dataset
 
-argentine_news = pd.read_excel('data/Noticias_argentinas.xlsx')
+argentine_news = pd.read_excel('/home/shipu/facu/ML2021/tp1/data/Noticias_argentinas.xlsx')
 # we want to filter news without category
 argentine_news = argentine_news.loc[argentine_news['categoria'].notnull()]
 
@@ -225,5 +328,9 @@ print(f'\nHITS: {result_hits}/{len(test)}')
 print(f'Success rate: {result_hits/len(test)}\n')
 
 # print(result_verbose)
+    
 
+
+metrics = get_metrics(bayes.confusion_matrix)
+print_metrics(metrics)
 plot_confusion_matrix(bayes.confusion_matrix)

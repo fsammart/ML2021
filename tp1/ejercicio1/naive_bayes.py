@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 class NaiveBayesClassifier:
 
@@ -8,30 +7,20 @@ class NaiveBayesClassifier:
 
     def train(self, df, group_column_name, apply_laplace=True):
         self.group_column_name = group_column_name
-        # Columna que indica la clasificacion del registro
         group_column = df[group_column_name]
-        
-        # Clases para clasificacion. Ej: I, E
         groups = group_column.unique()
-
-        # Cuantos registros hay para cada clase
         group_count = group_column.value_counts()
-       
         group_frequency = group_count / len(df)
-        
-        # Agregacion por cada atributo
         agg = df.groupby(group_column_name).agg('sum')
-        
         group_count.index.name = group_column_name
 
-        if not apply_laplace:
-            # Frecuencias relativas (SIN LAPLACE)
-            relative_freqs = agg.div(group_count, axis='index')
-        else:
-            # Frecuencias relativas (CON LAPLACE)
-            # TODO: Cambiar el "+2" y el "+1" por el 'k' de la formula
-            agg2 = agg + 1
-            relative_freqs_laplace = agg2.div(group_count + 2, axis='index')
+        # Frecuencias relativas (SIN LAPLACE)
+        relative_freqs = agg.div(group_count, axis='index')
+
+        # Frecuencias relativas (CON LAPLACE)
+        # TODO: Cambiar el "+2" y el "+1" por el 'k' de la formula
+        agg2 = agg + 1
+        relative_freqs_laplace = agg2.div(group_count + 2, axis='index')
 
         self.trained = True
         self.relative_freqs = relative_freqs_laplace if apply_laplace else relative_freqs
@@ -51,3 +40,4 @@ class NaiveBayesClassifier:
 
                         
         return df
+
