@@ -350,12 +350,20 @@ bayes = Bayes(mode=QUANTITY)
 
 # Pre processing Argentine News dataset
 
-argentine_news = pd.read_excel('/home/shipu/facu/ML2021/tp1/data/Noticias_argentinas.xlsx')
+argentine_news = pd.read_excel('/home/marina/ML2021/tp1/data/Noticias_argentinas.xlsx')
 # we want to filter news without category
 argentine_news = argentine_news.loc[argentine_news['categoria'].notnull()]
 
 # when commenting this, success rate will be much lower
-selected_categories = ['Deportes', 'Salud', 'Economia', 'Entretenimiento']
+selected_categories = [
+    'Deportes',
+    'Salud',
+    'Economia',
+    'Entretenimiento',
+    'Nacional',
+    'Internacional',
+    'Ciencia y Tecnologia'
+]
 argentine_news = argentine_news.loc[argentine_news['categoria'].isin(selected_categories)]
 
 print("Finished pre processing.")
