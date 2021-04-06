@@ -160,10 +160,6 @@ class Bayes:
             results, probabilities, winner, success = self.test(headline, real_category)
             self.confusion_matrix[real_category][winner] = self.confusion_matrix.get(real_category).get(winner) + 1
 
-            register_probability = sum(probabilities[x] for x in probabilities)
-            for k,v in probabilities.items():
-                probabilities[k] = probabilities[k] / register_probability
-
             probabilities["real"] = row.categoria
             self.roc_data.append(probabilities)
 
@@ -310,14 +306,15 @@ def plot_roc(roc_data):
             "tvp": []
         } for x in categories
     }
-    
+
     for category in categories:
-        for u in range(1, 10):
+        for u in range(0, 11):
             u = u / 10
             tp = 0
             fp = 0
             tn = 0
             fn = 0
+
             for entry in roc_data:
                 if entry["real"] == category:
                     if entry[category] > u: # es la categoria y predije true
@@ -336,9 +333,17 @@ def plot_roc(roc_data):
             roc_curve[category]["tfp"].append(tfp)
             roc_curve[category]["tvp"].append(tvp)
 
+    for cat in categories:
+        plt.plot(roc_curve[cat]["tfp"], roc_curve[cat]["tvp"], "-o", label=cat)
 
-    
-    plt.plot(roc_curve["Deportes"]["tfp"], roc_curve["Deportes"]["tvp"], "-bo")
+    line = [x/10 for x in range(0, 11)]
+    plt.plot(line,line, "--", color="blue")
+    axes = plt.gca()
+    axes.set_xlim([-0.01,1.09])
+    axes.set_ylim([-0.01,1.09])
+    plt.xlabel("Taza de Falsos Positivos")
+    plt.ylabel("Taza de Verdaderos Positivos")
+    plt.legend()
     plt.show()
         
 
@@ -362,7 +367,7 @@ selected_categories = [
     'Entretenimiento',
     'Nacional',
     'Internacional',
-    'Ciencia y Tecnologia'
+    'Ciencia y Tecnologia',
 ]
 argentine_news = argentine_news.loc[argentine_news['categoria'].isin(selected_categories)]
 
@@ -395,7 +400,10 @@ print(f'Success rate: {result_hits/len(test)}\n')
 # print(result_verbose)
     
 
-plot_roc(bayes.roc_data)
-# metrics = get_metrics(bayes.confusion_matrix)
-# print_metrics(metrics)
+
+metrics = get_metrics(bayes.confusion_matrix)
+print_metrics(metrics)
+
+# Dejamos los ploteos comentados, pero descomentar en caso de necesitar alguno
+# plot_roc(bayes.roc_data)
 # plot_confusion_matrix(bayes.confusion_matrix)
