@@ -2,6 +2,7 @@ import math
 import numpy as np
 import operator
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from plots import plot_confusion_matrix
 
@@ -111,6 +112,7 @@ class Bayes:
 
         # Metrics
         self.confusion_matrix = None
+        self.roc_data = None
 
     def process(self, headline, category):
         if category not in self.categories.keys():
@@ -148,6 +150,8 @@ class Bayes:
             for category in self.categories.keys()
         }
 
+        self.roc_data = []
+
         for idx in range(len(test_df)):
             row = test_df.iloc[idx]
             headline = row.titular
@@ -156,10 +160,19 @@ class Bayes:
             results, probabilities, winner, success = self.test(headline, real_category)
             self.confusion_matrix[real_category][winner] = self.confusion_matrix.get(real_category).get(winner) + 1
 
+            register_probability = sum(probabilities[x] for x in probabilities)
+            for k,v in probabilities.items():
+                probabilities[k] = probabilities[k] / register_probability
+
+            probabilities["real"] = row.categoria
+            self.roc_data.append(probabilities)
+
+
             hits += 1 if success else 0
             verbose += f'** Winner: {winner}, Real: {real_category} **\n'
         return hits, verbose
 
+    
     def __str__(self):
         desc = ''
         for name, category in self.categories.items():
@@ -283,13 +296,57 @@ def print_metrics(metrics):
         else:
             print(str(metrics["Promedio"][metric]).ljust(max_header_size), "\t", end='')
     print()
+
+def plot_roc(roc_data):
+    categories = list(roc_data[0].keys())
+    categories.remove("real")
+    
+
+    # Cada categoria va a ser un array donde el valor 0 corresponde a un distinto umbral
+    # posicion 0 => u = 0.1, posicion 1 => u = 0.2 .... posicion 8 => u = 0.9
+    roc_curve = {
+        x: {
+            "tfp": [],
+            "tvp": []
+        } for x in categories
+    }
+    
+    for category in categories:
+        for u in range(1, 10):
+            u = u / 10
+            tp = 0
+            fp = 0
+            tn = 0
+            fn = 0
+            for entry in roc_data:
+                if entry["real"] == category:
+                    if entry[category] > u: # es la categoria y predije true
+                        tp += 1
+                    else:
+                        fn +=1 # es la categoria y predije false
+                else:
+                    if entry[category] > u: #no es la categoria y predije true
+                        fp += 1
+                    else: # no es la categoria y predije false
+                        tn +=1
+
+
+            tfp = fp / (fp + tn)
+            tvp = tp /  (tp+fn)
+            roc_curve[category]["tfp"].append(tfp)
+            roc_curve[category]["tvp"].append(tvp)
+
+
+    
+    plt.plot(roc_curve["Deportes"]["tfp"], roc_curve["Deportes"]["tvp"], "-bo")
+    plt.show()
         
 
 ########################
 # RUN LEARNING PROCESS #
 ########################
 
-bayes = Bayes(mode=APPEARANCES)
+bayes = Bayes(mode=QUANTITY)
 
 # Pre processing Argentine News dataset
 
@@ -330,7 +387,7 @@ print(f'Success rate: {result_hits/len(test)}\n')
 # print(result_verbose)
     
 
-
-metrics = get_metrics(bayes.confusion_matrix)
-print_metrics(metrics)
-plot_confusion_matrix(bayes.confusion_matrix)
+plot_roc(bayes.roc_data)
+# metrics = get_metrics(bayes.confusion_matrix)
+# print_metrics(metrics)
+# plot_confusion_matrix(bayes.confusion_matrix)
