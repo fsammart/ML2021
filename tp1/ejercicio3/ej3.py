@@ -13,9 +13,10 @@ from collections import defaultdict
 
 
 g = {"rank": [],
-     "admit": ["GRE", "GPA", "rank"],
-     "GRE": ["rank"],
+    "admit": ["GRE", "GPA", "rank"],
+    "GRE": ["rank"],
      "GPA": ["rank"]
+
 }
 
 # Used for total probability theorem and to calculate laplacian correction
@@ -70,17 +71,30 @@ def prior_probability(position_of_attribute, data, prior_probabilities, values_f
 
     prior_probabilities.append(freq)
 
+def prior_probability2(position_of_attribute, data, values_for_attribute):
+    # here we have to calculate relative frequency.
+    freq = defaultdict(float)
+    for item in data:
+        freq[item[position_of_attribute]] += 1
+
+    total = sum(freq.values())
+
+    for k in freq:
+        freq[k] = (freq[k] + 1) / (total + len(values_for_attribute))
+
+    print(freq)
+
 def train():
     with open("binary.csv") as f :
         reader = csv.reader(f, delimiter=',')
         next(reader)
-        data = [(discretize(int(col2), "admit"), discretize(int(col2), "GRE"),
+        data = [(discretize(int(col1), "admit"), discretize(int(col2), "GRE"),
                  discretize(float(col3), "GPA"), discretize(col4,"rank")) for
                 col1, col2, col3, col4 in reader]
-
         # We store column position of each attribute for easy access.
         positions = {"admit" : 0, "GRE" : 1, "GPA" : 2, "rank" : 3}
 
+        prior_probability2(0, data, [True,False])
         for k, v in g.items() :
             if not v :
                 # It has no father, then we must calculate prior probabilities.
@@ -133,6 +147,7 @@ def predict(tuple):
     total = 0
     attribute_real_values= attribute_values.copy()
 
+
     # If attribute is set, then we don't have to use total probability theorem
     # over that attribute.
     for k, v in tuple.items():
@@ -166,6 +181,8 @@ def main():
 
     train()
 
+    print(attribute_values)
+
 
     proba = predict({"admit": False,
                     "rank": 1})
@@ -174,11 +191,52 @@ def main():
     print("P(admit = false / rank = 1) = ", proba)
 
     proba = predict({"admit" : True,
+                     "rank" : 1})
+
+    print("P(admit = true / rank = 1) = ", proba)
+
+    proba = predict({"admit" : True,
                      "rank" : 2,
                      "GRE" : 450,
                      "GPA" : 3.5})
 
     print("P(admit = true / rank = 2, GRE = 450, GPA = 3.5) = ", proba)
+
+    proba = predict({"admit" : False,
+                     "rank" : 2,
+                     "GRE" : 450,
+                     "GPA" : 3.5})
+
+    print("P(admit = false / rank = 2, GRE = 450, GPA = 3.5) = ", proba)
+
+    proba = predict({"admit" : True,
+                     "GRE" : 450,
+                     "GPA" : 3.5})
+
+    print("P(admit = true / GRE = 450, GPA = 3.5) = ", proba)
+
+    proba = predict({"admit" : True})
+
+    print("P(admit = true ) = ", proba)
+    proba = predict({"admit" : False})
+
+    print("P(admit = false) = ", proba)
+
+    print(prior_probabilities)
+
+    proba = predict({"admit" : True,
+                     "GRE" : 600, "rank":1, "GPA":4})
+
+    print("P(admit = true / GRE = 600, rank=1, gpa=4) = ", proba)
+
+    for i in range(1,5):
+
+        proba = predict({"admit" : False, 'rank':i})
+
+        print(f"P(admit = false| rank={i}) = ", proba)
+
+
+
 
 
 
