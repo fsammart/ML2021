@@ -12,7 +12,6 @@ class DecisionTree:
     _features = None  # dont include target variable
     gain_function = None
     height_limit = None  # Height limit of the tree
-    _default_feature_value = None  # A list that contains a a default value for each attribute
     leaf_nodes = 0
 
     def __init__(self, data, attributes, result_variable, name, gain_function, height_limit=None):
@@ -23,7 +22,6 @@ class DecisionTree:
         self.result_variable = result_variable
         self.gain_function = gain_function
         self.height_limit = height_limit
-        self._default_feature_value = defaultdict(str)
 
         self._decision_tree = self._make_tree(data, attributes, 0)
         self._dict_to_dot()
