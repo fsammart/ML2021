@@ -38,12 +38,11 @@ for i in range(crossed_validation_k):
     data = np.array(sentiments[attributes])  # each element is an array of 3 elements
 
     # Item 2: split dataset into training and test
-    X, Y, labels_X, labels_Y = train_test_split(data, labels, test_size=0.2)
+    X, Y, labels_X, labels_Y = train_test_split(data, labels, test_size=0.2, shuffle=True)
 
     knn = KNN(X, labels_X, classes)
     w_knn = WeightedKNN(X, labels_X, classes)
 
-    print(f'Running batch prediction for {len(Y)} registers.\n')
     results = knn.batch_predict(Y)
     w_results = w_knn.batch_predict(Y)
 
@@ -52,3 +51,5 @@ for i in range(crossed_validation_k):
 
     plot_heatmap(knn_confusion, f'knn_5_i{i}.png')
     plot_heatmap(w_knn_confusion, f'w_knn_5_i{i}.png')
+
+    print(f'Finished iteration {i}. Run batch prediction for {len(Y)} registers.\n')
