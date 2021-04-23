@@ -1,6 +1,6 @@
-import pandas as pd
+import math
 import numpy as np
-from sklearn.model_selection import train_test_split
+import pandas as pd
 
 from knn import KNN, WeightedKNN
 from utils import confusion_matrix, plot_heatmap
@@ -19,6 +19,8 @@ sentiments.loc[sentiments.title_sentiment != 0, 'title_sentiment'] = 1
 # TODO: I think they don't provide more information, discuss
 # dropping duplicate values
 sentiments = sentiments.drop_duplicates()
+# shuffling elements before using ml algorithm
+sentiments = sentiments.sample(frac=1).reset_index(drop=True)
 
 print(f'After pre processing dataset we are left with {len(sentiments)} registers.\n')
 
@@ -29,16 +31,25 @@ avg = round(
 )
 print(f'The avg. is {avg} words.\n')
 
-# TODO: update this
-crossed_validation_k = 3
+classes = np.array(sentiments[target].star_rating.unique())
+labels = np.array(sentiments[target].star_rating)
+data = np.array(sentiments[attributes])  # each element is an array of 3 elements
+
+crossed_validation_k = 4
+chunk_size = math.floor(len(data)/crossed_validation_k)
+
+print(f'For dataset with {len(data)} registers, each chunk is size {chunk_size}.', '\n')
+
 for i in range(crossed_validation_k):
 
-    classes = np.array(sentiments[target].star_rating.unique())
-    labels = np.array(sentiments[target].star_rating)
-    data = np.array(sentiments[attributes])  # each element is an array of 3 elements
+    # test indexes according to iteration
+    test_indices = np.array(range(chunk_size * i, chunk_size * (i + 1), 1))
 
     # Item 2: split dataset into training and test
-    X, Y, labels_X, labels_Y = train_test_split(data, labels, test_size=0.2, shuffle=True)
+    X = np.delete(data, test_indices, axis=0)
+    labels_X = np.delete(labels, test_indices, axis=0)
+    Y = data[test_indices[0]:(test_indices[-1] + 1)]
+    labels_Y = labels[test_indices[0]:(test_indices[-1] + 1)]
 
     knn = KNN(X, labels_X, classes)
     w_knn = WeightedKNN(X, labels_X, classes)
@@ -52,4 +63,4 @@ for i in range(crossed_validation_k):
     plot_heatmap(knn_confusion, f'knn_5_i{i}.png')
     plot_heatmap(w_knn_confusion, f'w_knn_5_i{i}.png')
 
-    print(f'Finished iteration {i}. Run batch prediction for {len(Y)} registers.\n')
+    print(f'Finished iteration {i}. Trained {len(X)} registers, tested {len(Y)} registers.')
