@@ -1,6 +1,7 @@
 import csv
 import random
 import tp2.ej1.DecisionTree as dt
+from tp2.ej1.RandomForest import RandomForest
 from tp2.ej1.utils import *
 import pandas as pd
 
@@ -92,5 +93,21 @@ def main ( ) :
         add_to_confusion_matrix(matrix, observation[result_variable], predicted_value)
 
     print(pd.DataFrame.from_dict(matrix))
+
+    ## Now Random Forest
+    #data, attributes, target_variable, name, gain_function, number_of_trees,
+    #number_of_attributes, number_of_elements,
+    # height_limit = None) :
+    random_f = RandomForest(training_data, attributes, result_variable, "credit_forest",gain_function,
+                            6,len(attributes)-1,int(len(training_data)/2),7)
+
+    initialize_confusion_matrix(matrix, ['1', '0'])
+
+    for observation in prediction_data :
+        predicted_value = random_f.predict(observation)
+        add_to_confusion_matrix(matrix, observation[result_variable], predicted_value)
+
+    print(pd.DataFrame.from_dict(matrix))
+    random_f.create_dot_image()
 
 main()
