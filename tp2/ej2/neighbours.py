@@ -21,16 +21,13 @@ sentiments['title_sentiment'].fillna(0.5, inplace=True)
 sentiments['title_sentiment'].replace('negative', 0, inplace=True)
 sentiments['title_sentiment'].replace('positive', 1, inplace=True)
 
-# do not drop this because we loose information
-# sentiments = sentiments.drop_duplicates()
-
 knn_means = []
 knn_stds = []
 w_knn_means = []
 w_knn_stds = []
 
-neighbours = np.arange(start=2, stop=10, step=1)
-print(f'Testing crossed validation for {neighbours} neighbours.')
+neighbours = np.arange(start=3, stop=len(sentiments)+1, step=2)
+print(f'Testing crossed validation for {len(neighbours)} neighbours.')
 for neigh_k in neighbours:
 
     iterations = np.arange(20)
@@ -46,7 +43,7 @@ for neigh_k in neighbours:
         labels = np.array(sentiments[target].star_rating)
         data = np.array(normalize_dataframe(sentiments[attributes]))  # each element is an array of 3 elements
 
-        crossed_validation_k = 5  #TODO: update with proper
+        crossed_validation_k = 6
         chunk_size = math.floor(len(data)/crossed_validation_k)
 
         # we will store here precision values for each cross validation run
@@ -86,6 +83,8 @@ for neigh_k in neighbours:
     knn_stds.append(knn_precisions_avg.std())
     w_knn_means.append(w_knn_precisions_avg.mean())
     w_knn_stds.append(w_knn_precisions_avg.std())
+
+    print(f'Finished neighbour {neigh_k}.')
 
 plot_to_choose_k(
     knn_means,
