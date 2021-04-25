@@ -1,8 +1,6 @@
 import itertools
 from collections import defaultdict
 
-matrix = defaultdict(lambda: defaultdict(int))
-
 
 def initialize_confusion_matrix(matrix, classes):
     for p in itertools.product(classes, repeat=2):

@@ -13,6 +13,7 @@ class DecisionTree:
     gain_function = None
     height_limit = None  # Height limit of the tree
     leaf_nodes = 0
+    expanded_nodes = 0
 
     def __init__(self, data, attributes, result_variable, name, gain_function, height_limit=None):
         self.name = name
@@ -163,6 +164,7 @@ class DecisionTree:
 
         # CASE C: Here we expand the node.
         else:
+            self.expanded_nodes += 1
             best = self.find_best_feature(data, attributes)
             # Create a new node based on best attribute
             tree = {best: {}}

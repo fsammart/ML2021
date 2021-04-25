@@ -79,35 +79,84 @@ def get_credit_prepared_data (train_percentage) :
     return training_data, prediction_data, attributes
 
 
-def main ( ) :
+
+def run_decision_tree (gain_function, height_limit) :
     result_variable = "Creditability"
     training_data, prediction_data, attributes = get_credit_prepared_data(0.8)
 
     decision_tree = dt.DecisionTree(training_data, attributes, result_variable, "credit", gain_function, height_limit)
 
-    decision_tree.create_dot_image()
-    initialize_confusion_matrix(matrix, ['1', '0'])
+    # decision_tree.create_dot_image()
+
+    train_matrix = defaultdict(lambda: defaultdict(int))
+    initialize_confusion_matrix(train_matrix, ['1', '0'])
+
+
+    #Confusion matrix for training data
+    for observation in training_data :
+        predicted_value = decision_tree.predict(observation)
+        add_to_confusion_matrix(train_matrix, observation[result_variable], predicted_value)
+
+        
+    test_matrix = defaultdict(lambda: defaultdict(int))
+    initialize_confusion_matrix(test_matrix, ['1', '0'])
 
     for observation in prediction_data :
         predicted_value = decision_tree.predict(observation)
-        add_to_confusion_matrix(matrix, observation[result_variable], predicted_value)
+        add_to_confusion_matrix(test_matrix, observation[result_variable], predicted_value)
 
-    print(pd.DataFrame.from_dict(matrix))
+    # print ("Expanded nodes: {}\n".format(decision_tree.expanded_nodes))
+    # print(pd.DataFrame.from_dict(matrix))
+    return decision_tree, train_matrix, test_matrix
+
+
+def get_metrics(matrix):
+    tp = matrix['1']['1']
+    tn = matrix['0']['0']
+    fn = matrix['1']['0']
+    fp = matrix['0']['1']
+    accuracy = (tp + tn) / (tp + tn + fp + fn)
+    precision = tp / (tp+fp)
+    recall = tp / (tp + fn)
+    f1 = (2*precision*recall) / (precision + recall)
+    tvp = tp /  (tp+fn)
+    tfp = fp / (fp + tn)
+
+    # Devuelvo precision pero se pueden devolver otras
+    return precision
+
+
+def run_dt_experiment():
+    min_height = 1
+    max_height = 20
+    number_of_repetitions = 200
+    for height in range(min_height,max_height):
+        for i in range(number_of_repetitions):
+            dtree, train_matrix, test_matrix =run_decision_tree(dt.DecisionTree.entropy, height)
+            train_precision = get_metrics(train_matrix)
+            test_precision = get_metrics(test_matrix)
+            with open("ej1_precision.csv", "a") as f:
+                f.write("{},{},{},{}\n".format(height,dtree.expanded_nodes, train_precision, test_precision))
+
+def main ( ) :
+    
+    run_dt_experiment()
 
     ## Now Random Forest
     #data, attributes, target_variable, name, gain_function, number_of_trees,
     #number_of_attributes, number_of_elements,
     # height_limit = None) :
-    random_f = RandomForest(training_data, attributes, result_variable, "credit_forest",gain_function,
-                            6,len(attributes)-1,int(len(training_data)/2),7)
 
-    initialize_confusion_matrix(matrix, ['1', '0'])
+    # random_f = RandomForest(training_data, attributes, result_variable, "credit_forest",gain_function,
+    #                         6,len(attributes)-1,int(len(training_data)/2),7)
 
-    for observation in prediction_data :
-        predicted_value = random_f.predict(observation)
-        add_to_confusion_matrix(matrix, observation[result_variable], predicted_value)
+    # initialize_confusion_matrix(matrix, ['1', '0'])
 
-    print(pd.DataFrame.from_dict(matrix))
-    random_f.create_dot_image()
+    # for observation in prediction_data :
+    #     predicted_value = random_f.predict(observation)
+    #     add_to_confusion_matrix(matrix, observation[result_variable], predicted_value)
+
+    # print(pd.DataFrame.from_dict(matrix))
+    # random_f.create_dot_image()
 
 main()
