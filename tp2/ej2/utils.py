@@ -30,17 +30,17 @@ def plot_heatmap(matrix, filename):
         c = matrix[i][j]
         ax.text(i, j, str(c), va='center', ha='center')
 
-    plt.xlabel("Prediction")
-    plt.ylabel("Truth")
+    plt.xlabel("Predicción")
+    plt.ylabel("Valor Real")
     plt.savefig(f'{results_directory}/confusion/{filename}', bbox_inches='tight')
     plt.close()
 
 
-def plot_precision(precisions_knn, precisions_w_knn, filename):
+def plot_precision(precisions_knn, precisions_w_knn, k, filename):
 
-    plt.title('Precision per iteration in k crossed validation')
-    plt.ylabel('Precision')
-    plt.xlabel('Iteration')
+    plt.title(f'Precisión por iteración, k={k}')
+    plt.ylabel('Precisión')
+    plt.xlabel('Iteración')
 
     points = np.arange(len(precisions_knn))
     width = 0.35  # the width of the bars
@@ -55,10 +55,10 @@ def plot_precision(precisions_knn, precisions_w_knn, filename):
     plt.close()
 
 
-def plot_different_k(precisions_knn, precisions_w_knn, filename):
+def plot_different_k(precisions_knn, precisions_w_knn, filename, title):
 
-    plt.title('Avg Precision vs. K for Crossed Validation')
-    plt.ylabel('Precision')
+    plt.title(title)
+    plt.ylabel('Precisión')
     plt.xlabel('K')
 
     plt.plot(precisions_knn, label='KNN', color='paleturquoise')

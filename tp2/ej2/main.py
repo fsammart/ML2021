@@ -92,7 +92,7 @@ for k in crossed_validations:
         plot_heatmap(knn_confusion, f'knn_k_{crossed_validation_k}_i{i}.png')
         plot_heatmap(w_knn_confusion, f'w_knn_k_{crossed_validation_k}_i{i}.png')
 
-    plot_precision(knn_precisions, w_knn_precisions, filename=f'precision_k_{crossed_validation_k}.png')
+    plot_precision(knn_precisions, w_knn_precisions, crossed_validation_k, filename=f'precision_k_{crossed_validation_k}.png')
 
     knn_precisions_avg[k-2] = knn_precisions.mean()
     knn_precisions_max[k-2] = knn_precisions.max()
@@ -104,7 +104,17 @@ for k in crossed_validations:
     print(f'For knn, avg precision was {knn_precisions.mean()} with max value {knn_precisions.max()}')
     print(f'For weighted knn, avg precision was {w_knn_precisions.mean()} with max value {w_knn_precisions.max()}')
 
-plot_different_k(knn_precisions_avg, w_knn_precisions_avg, filename='precisions_avg_k.png')
-plot_different_k(knn_precisions_max, w_knn_precisions_max, filename='precisions_max_k.png')
+plot_different_k(
+    knn_precisions_avg,
+    w_knn_precisions_avg,
+    filename='precisions_avg_k.png',
+    title='Precisión promedio vs. K de Validación Cruzada'
+)
+plot_different_k(
+    knn_precisions_max,
+    w_knn_precisions_max,
+    filename='precisions_max_k.png',
+    title='Precisión máxima vs. K de Validación Cruzada'
+)
 
 print(f'Completed {len(crossed_validations)} experiments with crossed validation.')
