@@ -4,6 +4,15 @@ import matplotlib.pyplot as plt
 results_directory = './results'
 
 
+def normalize_dataframe(data):
+    result = data.copy()
+    for feature_name in data.columns:
+        max_value = data[feature_name].max()
+        min_value = data[feature_name].min()
+        result[feature_name] = (data[feature_name] - min_value) / (max_value - min_value)
+    return result
+
+
 def confusion_matrix(predictions, reals, classes):
     matrix = np.zeros((len(classes), len(classes)))
 

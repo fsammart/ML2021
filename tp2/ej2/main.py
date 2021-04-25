@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 from knn import KNN, WeightedKNN
-from utils import confusion_matrix, plot_heatmap
+from utils import confusion_matrix, plot_heatmap, normalize_dataframe
 
 
 target = ['star_rating']
@@ -12,13 +12,14 @@ attributes = ['wordcount', 'title_sentiment', 'sentiment_value']
 sentiments = pd.read_csv('../data/reviews_sentiment.csv', delimiter=";")
 sentiments = sentiments[target + attributes]
 
-# preprocessing on title_sentiment column. TODO: decision with NaN must be reviewed
-sentiments.loc[sentiments.title_sentiment == 'negative', 'title_sentiment'] = 0
-sentiments.loc[sentiments.title_sentiment != 0, 'title_sentiment'] = 1
+# preprocessing on title_sentiment column.
+sentiments['title_sentiment'].fillna(0.5, inplace=True)
+sentiments['title_sentiment'].replace('negative', 0, inplace=True)
+sentiments['title_sentiment'].replace('positive', 1, inplace=True)
 
-# TODO: I think they don't provide more information, discuss
-# dropping duplicate values
-sentiments = sentiments.drop_duplicates()
+# do not drop this because we loose information
+# sentiments = sentiments.drop_duplicates()
+
 # shuffling elements before using ml algorithm
 sentiments = sentiments.sample(frac=1).reset_index(drop=True)
 
@@ -33,7 +34,7 @@ print(f'The avg. is {avg} words.\n')
 
 classes = np.array(sentiments[target].star_rating.unique())
 labels = np.array(sentiments[target].star_rating)
-data = np.array(sentiments[attributes])  # each element is an array of 3 elements
+data = np.array(normalize_dataframe(sentiments[attributes])) # each element is an array of 3 elements
 
 crossed_validation_k = 4
 chunk_size = math.floor(len(data)/crossed_validation_k)
@@ -64,3 +65,9 @@ for i in range(crossed_validation_k):
     plot_heatmap(w_knn_confusion, f'w_knn_5_i{i}.png')
 
     print(f'Finished iteration {i}. Trained {len(X)} registers, tested {len(Y)} registers.')
+
+# TODO: analyze crossed validation results
+
+# TODO: plot results with different ks for KNN and WeightedNN
+
+# precision tp/(tp+fp)

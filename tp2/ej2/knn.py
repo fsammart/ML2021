@@ -22,7 +22,7 @@ class KNN:
 
     @staticmethod
     def weight(distance):
-        return 1
+        return 1  # you are just counting
 
     def predict(self, register):
         # computes distance from register to existing data
@@ -36,19 +36,23 @@ class KNN:
         knn = distances_with_classes[:self.k]
 
         # if register is the same as any of training data, will return class
-        # note: this case should never happen since we dropped duplicates
         if knn[0][0] == 0.0: return knn[0][1]
 
         # computes max class
         results = np.zeros(len(self.classes))
         for (x,y) in knn: results[y-1] += self.weight(x) # x: distance, y: class
 
-        max_class = np.max(results)
-        # TODO: decide what to do when more than one max class
-        return np.where(results == max_class)[0][0] + 1
+        max_value = np.max(results)
+        winner = np.where(results == max_value)[0]
+        return winner[0]+1 if len(winner) == 1 else self.untie(register)
 
     def batch_predict(self, batch):
         return list(map(self.predict, batch))
+
+    def untie(self, register):
+        k = self.k + 1
+        knn = self.__class__(self.data, self.labels, self.classes, k=k)
+        return knn.predict(register)
 
 
 class WeightedKNN(KNN):
@@ -56,3 +60,11 @@ class WeightedKNN(KNN):
     @staticmethod
     def weight(distance):
         return 1/(distance ** 2) if distance != 0 else math.inf
+
+
+class CustomWeightedKNN(KNN):
+
+    @staticmethod
+    def weight(distance):
+        return 1/abs(distance) if distance != 0 else math.inf
+
