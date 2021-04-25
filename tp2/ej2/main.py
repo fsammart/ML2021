@@ -42,7 +42,6 @@ classes = np.array(sentiments[target].star_rating.unique())
 labels = np.array(sentiments[target].star_rating)
 data = np.array(normalize_dataframe(sentiments[attributes])) # each element is an array of 3 elements
 
-
 crossed_validations = np.arange(start=2, stop=11, step=1)
 print(f'Testing crossed validation for {crossed_validations}')
 
@@ -89,8 +88,8 @@ for k in crossed_validations:
         knn_precisions[i] = knn_tp/knn_confusion.sum()
         w_knn_precisions[i] = w_knn_tp/w_knn_confusion.sum()
 
-        plot_heatmap(knn_confusion, f'knn_k_{crossed_validation_k}_i{i}.png')
-        plot_heatmap(w_knn_confusion, f'w_knn_k_{crossed_validation_k}_i{i}.png')
+        # plot_heatmap(knn_confusion, f'knn_k_{crossed_validation_k}_i{i}.png')
+        # plot_heatmap(w_knn_confusion, f'w_knn_k_{crossed_validation_k}_i{i}.png')
 
     plot_precision(knn_precisions, w_knn_precisions, crossed_validation_k, filename=f'precision_k_{crossed_validation_k}.png')
 
@@ -107,13 +106,13 @@ for k in crossed_validations:
 plot_different_k(
     knn_precisions_avg,
     w_knn_precisions_avg,
-    filename='precisions_avg_k.png',
+    filename='k_cross_validation/precisions_avg_k.png',
     title='Precisión promedio vs. K de Validación Cruzada'
 )
 plot_different_k(
     knn_precisions_max,
     w_knn_precisions_max,
-    filename='precisions_max_k.png',
+    filename='k_cross_validation/precisions_max_k.png',
     title='Precisión máxima vs. K de Validación Cruzada'
 )
 

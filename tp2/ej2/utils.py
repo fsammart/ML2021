@@ -71,3 +71,44 @@ def plot_different_k(precisions_knn, precisions_w_knn, filename, title):
 
     plt.savefig(f'{results_directory}/{filename}', bbox_inches='tight')
     plt.close()
+
+
+def plot_different_k(precisions_knn, precisions_w_knn, filename, title):
+
+    plt.title(title)
+    plt.ylabel('Precisión')
+    plt.xlabel('K')
+
+    plt.plot(precisions_knn, label='KNN', color='paleturquoise')
+    plt.plot(precisions_w_knn, label='Weighted KNN', color='plum')
+
+    points = np.arange(len(precisions_knn))
+    labels = np.arange(start=2, stop=len(precisions_knn)+2, step=1)
+    plt.xticks(points, labels)
+    plt.legend()
+
+    plt.savefig(f'{results_directory}/{filename}', bbox_inches='tight')
+    plt.close()
+
+
+def plot_to_choose_k(knn_means, knn_stds, w_knn_means, w_knn_stds, title, filename):
+
+    plt.title(title)
+    plt.ylabel('Precisión')
+    plt.xlabel('K')
+
+    points = np.arange(len(knn_means))
+    labels = np.arange(start=2, stop=len(knn_means)+2, step=1)
+    plt.xticks(points, labels)
+
+    plt.errorbar(
+        points, knn_means, knn_stds, linestyle='None', label='KNN', capsize=5, marker='o', color='paleturquoise'
+    )
+    plt.errorbar(
+        points, w_knn_means, w_knn_stds, linestyle='None', label='Weighted KNN', capsize=5, marker='o', color='plum'
+    )
+
+    plt.legend()
+
+    plt.savefig(f'{results_directory}/{filename}', bbox_inches='tight')
+    plt.close()
