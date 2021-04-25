@@ -22,14 +22,12 @@ number_of_elements = 100
 # No of Credits at this Bank,Occupation,No of dependents,Telephone,Foreign Worker
 
 def discretize_month (value) :
-    if int(value) <= 6 :
+    if int(value) <= 12 :
         return "short"
-    elif int(value) <= 12 :
+    elif int(value) <= 25 :
         return "medium"
-    elif int(value) <= 18 :
+    else:
         return "long"
-    else :
-        return "very long"
 
 
 def discretize_credit_amount (value) :
@@ -37,21 +35,17 @@ def discretize_credit_amount (value) :
         return "small"
     elif int(value) <= 3000 :
         return "medium"
-    elif int(value) <= 6000 :
+    else:
         return "big"
-    else :
-        return "very big"
 
 
 def discretize_age (value) :
-    if int(value) <= 30 :
+    if int(value) <= 30:
         return "young"
-    elif int(value) <= 60 :
+    elif int(value) <= 60:
         return "adult"
-    elif int(value) <= 80 :
+    else:
         return "old"
-    else :
-        return "very old"
 
 
 def discretize (row) :
@@ -83,9 +77,24 @@ def main ( ) :
     result_variable = "Creditability"
     training_data, prediction_data, attributes = get_credit_prepared_data(0.8)
 
-    decision_tree = dt.DecisionTree(training_data, attributes, result_variable, "credit", gain_function, height_limit)
+    decision_tree = dt.DecisionTree(training_data,
+                                    attributes,
+                                    result_variable,
+                                    "credit",
+                                    gain_function,
+                                    gain_umbral=None,
+                                    data_umbral_explode=15,
+                                    height_limit=None)
 
     decision_tree.create_dot_image()
+    initialize_confusion_matrix(matrix, ['1', '0'])
+
+    for observation in training_data:
+        predicted_value = decision_tree.predict(observation)
+        add_to_confusion_matrix(matrix, observation[result_variable], predicted_value)
+
+    print(pd.DataFrame.from_dict(matrix))
+
     initialize_confusion_matrix(matrix, ['1', '0'])
 
     for observation in prediction_data :
@@ -98,16 +107,16 @@ def main ( ) :
     #data, attributes, target_variable, name, gain_function, number_of_trees,
     #number_of_attributes, number_of_elements,
     # height_limit = None) :
-    random_f = RandomForest(training_data, attributes, result_variable, "credit_forest",gain_function,
-                            6,len(attributes)-1,int(len(training_data)/2),7)
-
-    initialize_confusion_matrix(matrix, ['1', '0'])
-
-    for observation in prediction_data :
-        predicted_value = random_f.predict(observation)
-        add_to_confusion_matrix(matrix, observation[result_variable], predicted_value)
-
-    print(pd.DataFrame.from_dict(matrix))
-    random_f.create_dot_image()
+    # random_f = RandomForest(training_data, attributes, result_variable, "credit_forest",gain_function,
+    #                         6,len(attributes)-1,int(len(training_data)/2),7)
+    #
+    # initialize_confusion_matrix(matrix, ['1', '0'])
+    #
+    # for observation in prediction_data :
+    #     predicted_value = random_f.predict(observation)
+    #     add_to_confusion_matrix(matrix, observation[result_variable], predicted_value)
+    #
+    # print(pd.DataFrame.from_dict(matrix))
+    # random_f.create_dot_image()
 
 main()
