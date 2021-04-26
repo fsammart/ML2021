@@ -1,7 +1,21 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
+from sklearn import preprocessing
+
 results_directory = './results'
+
+
+def standardize_dataframe(data):
+    # Get column names first
+    names = data.columns
+    # Create the Scaler object
+    scaler = preprocessing.StandardScaler()
+    # Fit your data on the scaler object
+    scaled_df = scaler.fit_transform(data)
+    scaled_df = pd.DataFrame(scaled_df, columns=names)
+    return scaled_df
 
 
 def normalize_dataframe(data):
@@ -43,10 +57,10 @@ def plot_precision(precisions_knn, precisions_w_knn, k, filename):
     plt.xlabel('Iteración')
 
     points = np.arange(len(precisions_knn))
-    width = 0.35  # the width of the bars
+    width = 0.5  # the width of the bars
 
-    plt.bar(points - width/2, precisions_knn, width, label='KNN', color='paleturquoise')
-    plt.bar(points + width/2, precisions_w_knn, width, label='Weighted KNN', color='plum')
+    plt.bar(points, precisions_w_knn, width, label='Weighted KNN', color='plum')
+    #plt.bar(points + width/2, precisions_w_knn, width, label='Weighted KNN', color='plum')
 
     plt.xticks(points)
     plt.legend(loc='lower left')
@@ -91,10 +105,9 @@ def plot_different_k(precisions_knn, precisions_w_knn, filename, title):
     plt.close()
 
 
-def plot_to_choose_k(knn_means, knn_stds, w_knn_means, w_knn_stds, title, filename):
+def plot_to_choose_k(knn_means, knn_stds, w_knn_means, w_knn_stds, title, labels, filename):
 
     points = np.arange(len(knn_means))
-    labels = np.arange(start=2, stop=len(knn_means)+2, step=1)
 
     plt.title(title)
     plt.ylabel('Precisión')
@@ -114,8 +127,8 @@ def plot_to_choose_k(knn_means, knn_stds, w_knn_means, w_knn_stds, title, filena
     plt.title(title)
     plt.ylabel('Precisión')
     plt.xlabel('K')
-    plt.plot(knn_means, color='paleturquoise')
-    plt.plot(w_knn_means, color='plum')
+    plt.plot(knn_means, label='KNN', color='paleturquoise')
+    plt.plot(w_knn_means,  label='Weighted KNN', color='plum')
     plt.xticks(points, labels)
     plt.legend()
 

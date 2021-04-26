@@ -6,6 +6,7 @@ from knn import KNN, WeightedKNN
 from utils import (
     confusion_matrix,
     normalize_dataframe,
+    standardize_dataframe,
     plot_to_choose_k
 )
 
@@ -26,7 +27,7 @@ knn_stds = []
 w_knn_means = []
 w_knn_stds = []
 
-neighbours = np.arange(start=3, stop=len(sentiments)+1, step=2)
+neighbours = np.arange(start=3, stop=34, step=2)
 print(f'Testing crossed validation for {len(neighbours)} neighbours.')
 for neigh_k in neighbours:
 
@@ -92,6 +93,7 @@ plot_to_choose_k(
     w_knn_means,
     w_knn_stds,
     title='Precisión promedio vs. elección de K vecinos.',
+    labels=neighbours,
     filename='k_neighbours/choose_k.png'
 )
 
