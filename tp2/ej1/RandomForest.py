@@ -1,5 +1,6 @@
 import random
 from tp2.ej1.DecisionTree import DecisionTree
+import numpy as np
 
 class RandomForest:
 
@@ -19,6 +20,7 @@ class RandomForest:
             tree = DecisionTree(train_data, attributes_for_tree, target_variable, name + "_" + str(i), gain_function,
                                 height_limit)
             self.trees.append(tree)
+        self.expanded_nodes = np.mean([tree.expanded_nodes for tree in self.trees])
 
 
     # We predict Aggregating Result, in this case moda

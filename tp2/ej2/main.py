@@ -3,7 +3,13 @@ import numpy as np
 import pandas as pd
 
 from knn import KNN, WeightedKNN
-from utils import confusion_matrix, plot_heatmap
+from utils import (
+    confusion_matrix,
+    normalize_dataframe,
+    plot_heatmap,
+    plot_precision,
+    plot_different_k
+)
 
 
 target = ['star_rating']
@@ -12,13 +18,14 @@ attributes = ['wordcount', 'title_sentiment', 'sentiment_value']
 sentiments = pd.read_csv('../data/reviews_sentiment.csv', delimiter=";")
 sentiments = sentiments[target + attributes]
 
-# preprocessing on title_sentiment column. TODO: decision with NaN must be reviewed
-sentiments.loc[sentiments.title_sentiment == 'negative', 'title_sentiment'] = 0
-sentiments.loc[sentiments.title_sentiment != 0, 'title_sentiment'] = 1
+# preprocessing on title_sentiment column.
+sentiments['title_sentiment'].fillna(0.5, inplace=True)
+sentiments['title_sentiment'].replace('negative', 0, inplace=True)
+sentiments['title_sentiment'].replace('positive', 1, inplace=True)
 
-# TODO: I think they don't provide more information, discuss
-# dropping duplicate values
-sentiments = sentiments.drop_duplicates()
+# do not drop this because we loose information
+# sentiments = sentiments.drop_duplicates()
+
 # shuffling elements before using ml algorithm
 sentiments = sentiments.sample(frac=1).reset_index(drop=True)
 
@@ -30,15 +37,39 @@ avg = round(
     sentiments.loc[sentiments.star_rating == 1]['wordcount'].mean(), 2
 )
 print(f'The avg. is {avg} words.\n')
+print('Which is the avg qty of words of comments valued with 2 stars?')
+avg = round(
+    sentiments.loc[sentiments.star_rating == 2]['wordcount'].mean(), 2
+)
+print(f'The avg. is {avg} words.\n')
+print('Which is the avg qty of words of comments valued with 3 stars?')
+avg = round(
+    sentiments.loc[sentiments.star_rating == 3]['wordcount'].mean(), 2
+)
+print(f'The avg. is {avg} words.\n')
+print('Which is the avg qty of words of comments valued with 4 stars?')
+avg = round(
+    sentiments.loc[sentiments.star_rating == 4]['wordcount'].mean(), 2
+)
+print(f'The avg. is {avg} words.\n')
+print('Which is the avg qty of words of comments valued with 5 stars?')
+avg = round(
+    sentiments.loc[sentiments.star_rating == 5]['wordcount'].mean(), 2
+)
+print(f'The avg. is {avg} words.\n')
 
 classes = np.array(sentiments[target].star_rating.unique())
 labels = np.array(sentiments[target].star_rating)
-data = np.array(sentiments[attributes])  # each element is an array of 3 elements
+data = np.array(normalize_dataframe(sentiments[attributes])) # each element is an array of 3 elements
 
-crossed_validation_k = 4
+crossed_validation_k = 6
 chunk_size = math.floor(len(data)/crossed_validation_k)
 
 print(f'For dataset with {len(data)} registers, each chunk is size {chunk_size}.', '\n')
+
+# we will store here precision values for each cross validation run
+knn_precisions = np.zeros(crossed_validation_k)
+w_knn_precisions = np.zeros(crossed_validation_k)
 
 for i in range(crossed_validation_k):
 
@@ -51,16 +82,27 @@ for i in range(crossed_validation_k):
     Y = data[test_indices[0]:(test_indices[-1] + 1)]
     labels_Y = labels[test_indices[0]:(test_indices[-1] + 1)]
 
-    knn = KNN(X, labels_X, classes)
+    # knn = KNN(X, labels_X, classes)
     w_knn = WeightedKNN(X, labels_X, classes)
 
-    results = knn.batch_predict(Y)
+    # results = knn.batch_predict(Y)
     w_results = w_knn.batch_predict(Y)
 
-    knn_confusion = confusion_matrix(results, labels_Y, classes)
+    # knn_confusion = confusion_matrix(results, labels_Y, classes)
     w_knn_confusion = confusion_matrix(w_results, labels_Y, classes)
 
-    plot_heatmap(knn_confusion, f'knn_5_i{i}.png')
-    plot_heatmap(w_knn_confusion, f'w_knn_5_i{i}.png')
+    # knn_tp = knn_confusion.trace()
+    w_knn_tp = w_knn_confusion.trace()
 
-    print(f'Finished iteration {i}. Trained {len(X)} registers, tested {len(Y)} registers.')
+    # knn_precisions[i] = knn_tp/knn_confusion.sum()
+    w_knn_precisions[i] = w_knn_tp/w_knn_confusion.sum()
+
+    # plot_heatmap(knn_confusion, f'knn_k_{crossed_validation_k}_i{i}.png')
+    plot_heatmap(w_knn_confusion, f'w_knn_k_{crossed_validation_k}_i{i}.png')
+
+plot_precision(knn_precisions, w_knn_precisions, crossed_validation_k, filename=f'precision_k_{crossed_validation_k}.png')
+
+print()
+print(f'Finished all iterations. Trained {len(data)} registers, tested {chunk_size} registers.')
+print(f'For knn, avg precision was {knn_precisions.mean()} with max value {knn_precisions.max()}')
+print(f'For weighted knn, avg precision was {w_knn_precisions.mean()} with max value {w_knn_precisions.max()}')

@@ -13,17 +13,24 @@ class DecisionTree:
     gain_function = None
     height_limit = None  # Height limit of the tree
     leaf_nodes = 0
-    expanded_nodes = 0
+    data_umbral_explode = None
+    gain_umbral = None
 
-    def __init__(self, data, attributes, result_variable, name, gain_function, height_limit=None):
+    def __init__(self, data, attributes, result_variable,
+                 name, gain_function,
+                 height_limit=None,
+                 data_umbral_explode=None,
+                 gain_umbral=None):
         self.name = name
         self._attributes = attributes
         self._features = list(attributes)
         self._features.remove(result_variable)
         self.result_variable = result_variable
         self.gain_function = gain_function
+        self.expanded_nodes = 0
         self.height_limit = height_limit
-
+        self.data_umbral_explode = data_umbral_explode
+        self.gain_umbral = gain_umbral
         self._decision_tree = self._make_tree(data, attributes, 0)
         self._dict_to_dot()
 
@@ -142,7 +149,7 @@ class DecisionTree:
             if current_gain >= max_gain:
                 max_gain = current_gain
                 best = attr
-        return best
+        return best, max_gain
 
     def _make_tree(self, data, attributes, height):
         height += 1
@@ -150,9 +157,15 @@ class DecisionTree:
         # Contains all target values of current data
         target_values = [observation[self.result_variable] for observation in data]
 
+        explode = True
+
+        # Check if there is enough data to divide. In case Poda is activated
+        if self.data_umbral_explode is not None:
+            if len(target_values) < self.data_umbral_explode:
+                explode = False
 
         # CASE A: If the height is maximum, or there are no attributes.
-        if  (len(attributes) - 1) <= 0  or \
+        if not explode or (len(attributes) - 1) <= 0  or \
                 (self.height_limit is not None and height > self.height_limit):
             self.leaf_nodes += 1
             return self.current_moda(self.result_variable, data)
@@ -165,7 +178,13 @@ class DecisionTree:
         # CASE C: Here we expand the node.
         else:
             self.expanded_nodes += 1
-            best = self.find_best_feature(data, attributes)
+            best, gain = self.find_best_feature(data, attributes)
+            # Check if gain is enough to divide
+            if self.gain_umbral is not None:
+                if gain < self.gain_umbral:
+                    self.leaf_nodes += 1
+                    return self.current_moda(self.result_variable, data)
+
             # Create a new node based on best attribute
             tree = {best: {}}
 
