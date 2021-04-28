@@ -175,30 +175,30 @@ class DecisionTree:
 
     @staticmethod
     def gini(data, target_variable):
-        val_freq = defaultdict(float)
+        freq_variable = defaultdict(float)
         sum = 0.0
 
         for entry in data:
-            val_freq[entry[target_variable]] += 1.0
+            freq_variable[entry[target_variable]] += 1.0
 
-        for freq in val_freq.values():
+        for freq in freq_variable.values():
             sum += (freq / len(data)) ** 2
 
         return 1 - sum
 
     @staticmethod
     def shannon(data, target_variable):
-        val_freq = defaultdict(float)
-        _entropy = 0.0
+        freq_variable = defaultdict(float)
+        entropy = 0.0
 
         for entry in data:
-            val_freq[entry[target_variable]] += 1.0
+            freq_variable[entry[target_variable]] += 1.0
 
-        for freq in val_freq.values():
+        for freq in freq_variable.values():
             if freq != 0:
-                _entropy += (-freq / len(data)) * math.log(freq / len(data), 2)
+                entropy += (-freq / len(data)) * math.log(freq / len(data), 2)
 
-        return _entropy
+        return entropy
     ## Visual Representation
 
     def __str__(self):
