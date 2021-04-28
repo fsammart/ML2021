@@ -44,7 +44,7 @@ class KNN:
 
         max_value = np.max(results)
         winner = np.where(results == max_value)[0]
-        return winner[0]+1  #if len(winner) == 1 or self.k == len(self.data) else self.untie(register)
+        return winner[0]+1  if len(winner) == 1 or self.k == len(self.data) else self.untie(register)
 
     def batch_predict(self, batch):
         return list(map(self.predict, batch))

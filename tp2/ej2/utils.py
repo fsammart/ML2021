@@ -46,7 +46,7 @@ def plot_heatmap(matrix, filename):
 
     plt.xlabel("Predicción")
     plt.ylabel("Valor Real")
-    plt.savefig(f'{results_directory}/confusion/{filename}', bbox_inches='tight')
+    plt.savefig(f'{filename}', bbox_inches='tight')
     plt.close()
 
 
