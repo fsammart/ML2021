@@ -56,10 +56,6 @@ class DecisionTree:
 
         return max(results, key = results.count)
 
-
-
-        #return self._default_feature_value[self.result_variable]
-
     # Default value is found by most occurrences
     def current_moda(self, attribute, data):
 
@@ -99,7 +95,7 @@ class DecisionTree:
 
 
     @staticmethod
-    def entropy(data, target_variable):
+    def shannon(data, target_variable):
         val_freq = defaultdict(float)
         _entropy = 0.0
 
@@ -115,15 +111,15 @@ class DecisionTree:
     @staticmethod
     def gini(data, target_variable):
         val_freq = defaultdict(float)
-        _sum = 0.0
+        sum = 0.0
 
         for entry in data:
             val_freq[entry[target_variable]] += 1.0
 
         for freq in val_freq.values():
-            _sum += (freq / len(data)) ** 2
+            sum += (freq / len(data)) ** 2
 
-        return 1 - _sum
+        return 1 - sum
 
     def get_subtree_data(self, data, best, val):
         subtree_data = []
@@ -136,7 +132,7 @@ class DecisionTree:
                 subtree_data.append(new_entry)
         return subtree_data
 
-    # Choose best attribute
+    # Select best attribute based on gain
     def find_best_feature(self, data, attributes):
         best = None
         max_gain = 0
@@ -153,8 +149,6 @@ class DecisionTree:
 
     def _make_tree(self, data, attributes, height):
         height += 1
-
-        # Contains all target values of current data
         target_values = [observation[self.result_variable] for observation in data]
 
         explode = True
@@ -164,18 +158,18 @@ class DecisionTree:
             if len(target_values) < self.data_umbral_explode:
                 explode = False
 
-        # CASE A: If the height is maximum, or there are no attributes.
+        # CASE 1: If the height is maximum, or there are no attributes.
         if not explode or (len(attributes) - 1) <= 0  or \
                 (self.height_limit is not None and height > self.height_limit):
             self.leaf_nodes += 1
             return self.current_moda(self.result_variable, data)
 
-        # CASE B: All observations have the same target value. Return that value.
+        # CASE 2: All observations have the same target value. Return that value.
         elif len(set(target_values)) == 1:
             self.leaf_nodes += 1
             return target_values[0]
 
-        # CASE C: Here we expand the node.
+        # CASE 3: Here we expand the node.
         else:
             self.expanded_nodes += 1
             best, gain = self.find_best_feature(data, attributes)
@@ -185,24 +179,20 @@ class DecisionTree:
                     self.leaf_nodes += 1
                     return self.current_moda(self.result_variable, data)
 
-            # Create a new node based on best attribute
+            # Create new node to expand
             tree = {best: {}}
 
             # Create branches for each value
             values_for_best_attribute = self.get_values(data, best)
 
             for val in values_for_best_attribute:
-                # prepare data for subtree
+                # prepare data to create subtree
                 data_for_subtree = self.get_subtree_data(data, best, val)
-                # prepare attributes
                 new_attributes = list(attributes)
                 new_attributes.remove(best)
-
-                # Recursive
+                # Call the recursive function
                 subtree = self._make_tree(data_for_subtree, new_attributes, height)
-
-                # Add the new subtree to the empty dictionary object in our new
-                # tree/node we just created.
+                # We add our result
                 tree[best][val] = subtree
 
         return tree

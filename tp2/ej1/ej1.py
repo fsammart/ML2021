@@ -159,7 +159,7 @@ def run_single_dt():
     gain_umbral = None
     filename = "confusion_data_50.png"
     height = None
-    dtree, train_matrix, test_matrix =run_decision_tree(dt.DecisionTree.entropy, height_limit=height, data_umbral_explode=data_umbral, gain_umbral=gain_umbral)
+    dtree, train_matrix, test_matrix =run_decision_tree(dt.DecisionTree.shannon, height_limit=height, data_umbral_explode=data_umbral, gain_umbral=gain_umbral)
     print(train_matrix)
     cm = conf_matrix(test_matrix)
     plot_heatmap(cm, filename)
@@ -183,7 +183,7 @@ def run_random_forest_experiment():
     height = None
     for height in range(1,15):
         for i in range(number_of_repetitions):
-            random_f, train_matrix, test_matrix =run_random_forest(dt.DecisionTree.entropy, height_limit=height, data_umbral_explode=data_umbral, gain_umbral=gain_umbral)
+            random_f, train_matrix, test_matrix =run_random_forest(dt.DecisionTree.shannon, height_limit=height, data_umbral_explode=data_umbral, gain_umbral=gain_umbral)
             train_precision = get_metrics(train_matrix)
             test_precision = get_metrics(test_matrix)
             with open(filename, "a") as f:
@@ -210,7 +210,7 @@ def run_dt_experiment():
     rng = np.linspace(min_value, max_value, 500)
     for gain_umbral in rng:
         for i in range(number_of_repetitions):
-            dtree, train_matrix, test_matrix =run_decision_tree(dt.DecisionTree.entropy, height_limit=height, data_umbral_explode=data_umbral, gain_umbral=gain_umbral)
+            dtree, train_matrix, test_matrix =run_decision_tree(dt.DecisionTree.shannon, height_limit=height, data_umbral_explode=data_umbral, gain_umbral=gain_umbral)
             train_precision = get_metrics(train_matrix)
             test_precision = get_metrics(test_matrix)
             with open(filename, "a") as f:
