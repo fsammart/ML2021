@@ -15,5 +15,4 @@ def calculate_correctness(m,b,points):
     for p in points:
         if (m*p[0] + b - p[1]) *p[3] <0:
             return False
-
     return True
