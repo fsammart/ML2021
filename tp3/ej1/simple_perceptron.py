@@ -161,64 +161,38 @@ class SimplePerceptron:
         final_m = -1 * a / b
         final_b = -1 * c / b
         final_points = None
-        final_distance = None
-        for ck1 in itertools.combinations(class1, k1):
-            for ck2 in itertools.combinations(class2, k2):
-                # here we have the combinations.
-                # Dummy code so that it doesn´t mark as error
-                p1 = ck1[0][0:2]
-                p2 = ck1[1][0:2]
-                p3 = ck2[0][0:2]
-                line = p2 - p1
-                line = line/np.linalg.norm(line)
-                slope = line[1]/line[0]
-                d1 = np.linalg.norm(p3-p1)
-                d2 = np.linalg.norm(p3-p2)
-                chosen = None
-                if d1<d2:
-                    chosen = p1
-                else:
-                    chosen = p2
-                mpoint = [(chosen[0] + p3[0])/2,(chosen[1] + p3[1])/2]
+        for c_class in [class1, class2]:
+            o_class = class1
+            if c_class is class1:
+                o_class = class2
+            for ck1 in itertools.combinations(c_class, k1):
+                for ck2 in itertools.combinations(o_class, k2):
+                    # here we have the combinations.
+                    # Dummy code so that it doesn´t mark as error
+                    p1 = ck1[0][0:2]
+                    p2 = ck1[1][0:2]
+                    p3 = ck2[0][0:2]
+                    line = p2 - p1
+                    line = line/np.linalg.norm(line)
+                    slope = line[1]/line[0]
+                    d1 = np.linalg.norm(p3-p1)
+                    d2 = np.linalg.norm(p3-p2)
+                    chosen = None
+                    if d1<d2:
+                        chosen = p1
+                    else:
+                        chosen = p2
+                    mpoint = [(chosen[0] + p3[0])/2,(chosen[1] + p3[1])/2]
 
-                b = mpoint[1] - slope * mpoint[0]
-                if not calculate_correctness(slope,b, data2):
-                    continue
-                curr_margin = calculate_margin(slope, b, data2)
-                if curr_margin > final_margin:
-                    final_m = slope
-                    final_b = b
-                    final_points = [p1,p2,p3]
-                    final_margin=curr_margin
-
-        for ck1 in itertools.combinations(class2, k1) :
-            for ck2 in itertools.combinations(class1, k2) :
-                # here we have the combinations.
-                # Dummy code so that it doesn´t mark as error
-                p1 = ck1[0][0 :2]
-                p2 = ck1[1][0 :2]
-                p3 = ck2[0][0 :2]
-                line = p2 - p1
-                line = line / np.linalg.norm(line)
-                slope = line[1] / line[0]
-                d1 = np.linalg.norm(p3 - p1)
-                d2 = np.linalg.norm(p3 - p2)
-                chosen = None
-                if d1 < d2 :
-                    chosen = p1
-                else :
-                    chosen = p2
-                mpoint = [(chosen[0] + p3[0]) / 2, (chosen[1] + p3[1]) / 2]
-
-                b = mpoint[1] - slope * mpoint[0]
-                if not calculate_correctness(slope, b, data2) :
-                    continue
-                curr_margin = calculate_margin(slope, b, data2)
-                if curr_margin > final_margin :
-                    final_m = slope
-                    final_b = b
-                    final_points = [p1, p2, p3]
-                    final_margin = curr_margin
+                    b = mpoint[1] - slope * mpoint[0]
+                    if not calculate_correctness(slope,b, data2):
+                        continue
+                    curr_margin = calculate_margin(slope, b, data2)
+                    if curr_margin > final_margin:
+                        final_m = slope
+                        final_b = b
+                        final_points = [p1,p2,p3]
+                        final_margin=curr_margin
 
         return final_m, final_b, final_margin, final_points
 
