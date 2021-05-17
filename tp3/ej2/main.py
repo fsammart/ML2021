@@ -55,7 +55,11 @@ def run_classifier(c_value, kernel='linear'):
 c_range = np.arange(0.1, 5.2, 0.2)
 
 filename = 'results.csv'
+final_string = ''
+
+for c in c_range:
+    test_precision, train_precision = run_classifier(c)
+    final_string += f'{c},linear,{test_precision},{train_precision}\n'
+
 with open(filename, 'w') as fp:
-    for c in c_range:
-        test_precision, train_precision = run_classifier(c)
-        fp.write(f'linear,{test_precision},{train_precision}')
+    fp.write(final_string)
