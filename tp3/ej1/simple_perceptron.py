@@ -1,11 +1,26 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import random
-from tp3.ej1.utils import shortest_distance, calculate_margin, calculate_correctness
+from utils import shortest_distance, calculate_margin, calculate_correctness
 import itertools
 
 from numpy.core.shape_base import block
 
+
+class Slope:
+    def __init__(self, m, ind, legend, color, line_type="-"):
+        self.m = m
+        self.ind = ind
+        self.legend = legend
+        self.color = color
+        self.line_type = line_type
+
+
+    def plot(self):
+        x = np.array((-1, 6))
+        y = np.array((-1 * self.m + self.ind, 6 * self.m + self.ind))
+        plt.plot(x, y, self.line_type, color=self.color)
+    
 
 
 class SimplePerceptron:
@@ -54,7 +69,7 @@ class SimplePerceptron:
         return np.sign(input)
 
     def train(self):
-        self.plot_classes()
+        # self.plot_classes()
         epoch = 0
         error = 1
         min_error = 4*self.samples
@@ -82,33 +97,46 @@ class SimplePerceptron:
                     min_weights = self.weights
                 
                 if self.visualize:
-                    self.draw()
+                    self.draw("Perceptron simple")
         if self.calculate_errors:
             self.weights = min_weights
             self.error = min_error
         else:
             self.error = self.calculate_error()
 
-    def draw_with_slope(self, m, ind):
-        x = np.array((-1, 6))
-        y = np.array((-1 * m + ind, 6 * m + ind))
-
-        if self.last :
-            l = self.last.pop(0)
-            l.remove()
-        self.last = plt.plot(x, y, color="black")
+    def draw_with_slope(self, slopes, draw_natural_separation=True):
+        #  Limit plots axis to -5;5
+        axes = plt.gca()
+        limits = [0,5]
+        axes.set_xlim(limits)
+        axes.set_ylim(limits)
+        legend = []
+        
+        if draw_natural_separation:
+            slopes.append(Slope(1,0,"y=x", "black", "k--"))
+        
+        for slope in slopes:
+            slope.plot()
+            legend.append(slope.legend)
+        
         colors = np.where(self.raw_data[:, 3] > 0, 'red', 'blue')
         plt.scatter(self.raw_data[:, 0], self.raw_data[:, 1], color=colors)
-        plt.show(block=False)
-        plt.pause(0.01)
+        axes.legend(legend)
+        plt.show(block=True)
 
-    def draw(self):
+
+    def get_slope(self, legend, color="green"):
         a,b,c = self.weights[0], self.weights[1], self.weights[2]
         if b == 0:
             return
         m = -1 * a / b
         ind = -1 * c / b
-        self.draw_with_slope(m,ind)
+        slope = Slope(m,ind,legend,color)
+        return slope
+
+    def draw(self, legend, color="green"):
+        slope = self.get_slope(legend,color)
+        self.draw_with_slope([slope])
 
     def calculate_error(self):
         class_col = self.attr_size
@@ -195,10 +223,3 @@ class SimplePerceptron:
                         final_margin=curr_margin
 
         return final_m, final_b, final_margin, final_points
-
-
-
-
-
-# ax + by + c = 0
-# y = -a/bx - c/b

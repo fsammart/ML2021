@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from simple_perceptron import SimplePerceptron
+from simple_perceptron import SimplePerceptron, Slope
 from math import sqrt
 
 
@@ -35,7 +35,7 @@ def get_train_data(c1,c2):
 
 def main():
     print("Ejercicio 1 - Perceptron Simple")
-    c1,c2 = generate_separable_points(10)
+    c1,c2 = generate_separable_points(50,0.1)
     data = get_train_data(c1,c2)
     
     sp = SimplePerceptron(data,max_epoch=1000,learning_rate=0.1, visualize=False, calculate_errors=True)
@@ -47,10 +47,14 @@ def main():
 
     print("Error: ", sqrt(sp.error))
     print("Weights: ", sp.weights)
-    sp.draw()
+    
+    # sp.draw("Perceptron simple", "yellow")
     # plot_classes(c1,c2)
-    m,b, margin, points = sp.optimus_hiperplane(n=4)
-    sp.draw_with_slope(m,b)
+    m,b, margin, points = sp.optimus_hiperplane(n=10)
+
+    perceptron_slope = sp.get_slope("Perceptron", "yellow")
+    optimum_slope = Slope(m,b,"Hiperplano Optimo","green")
+    sp.draw_with_slope([perceptron_slope, optimum_slope], False)
     print('final points', points)
 
 if __name__ == "__main__":
