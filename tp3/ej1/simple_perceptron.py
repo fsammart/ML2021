@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import random
+from tp3.ej1.utils import shortest_distance, calculate_margin, calculate_correctness
+import itertools
 
 from numpy.core.shape_base import block
 
@@ -87,22 +89,26 @@ class SimplePerceptron:
         else:
             self.error = self.calculate_error()
 
+    def draw_with_slope(self, m, ind):
+        x = np.array((-1, 6))
+        y = np.array((-1 * m + ind, 6 * m + ind))
+
+        if self.last :
+            l = self.last.pop(0)
+            l.remove()
+        self.last = plt.plot(x, y, color="black")
+        colors = np.where(self.raw_data[:, 3] > 0, 'red', 'blue')
+        plt.scatter(self.raw_data[:, 0], self.raw_data[:, 1], color=colors)
+        plt.show(block=False)
+        plt.pause(0.01)
+
     def draw(self):
         a,b,c = self.weights[0], self.weights[1], self.weights[2]
         if b == 0:
             return
         m = -1 * a / b
         ind = -1 * c / b
-
-        x = np.array((-1,6))
-        y = np.array((-1 * m + ind, 6*m + ind))
-
-        if self.last:
-            l = self.last.pop(0)
-            l.remove()
-        self.last = plt.plot(x,y,color="red")
-        plt.show(block=False)
-        plt.pause(0.01)
+        self.draw_with_slope(m,ind)
 
     def calculate_error(self):
         class_col = self.attr_size
@@ -123,6 +129,73 @@ class SimplePerceptron:
         excitation = self.weights.dot(sample)
         activation = self.activate(excitation)
         return activation
+
+    ## Call after training.
+    ## n: number of points on each side of the plane to check. (4)
+    ## k: number of support vectors.
+    def optimus_hiperplane(self, n=4):
+        k=3
+        # Calculate current hiperplane
+        a, b, c = self.weights[0], self.weights[1], self.weights[2]
+
+        # Get n closest elements from each class to the current hiperplane
+        data2 = list(self.raw_data.copy())
+        data2.sort(key=lambda t: shortest_distance(t[0],t[1],a,b,c))
+        # data2 is now sorted, get n elements from each class
+        class1 = []
+        class2 = []
+        idx = 0
+        while idx < len(data2) and (len(class1)<n or len(class2) <n):
+            curr_class = data2[idx][3]
+            if curr_class == 1 and len(class1)<n:
+                class1.append(data2[idx])
+            if curr_class == -1 and len(class2)<n:
+                class2.append(data2[idx])
+            idx +=1
+
+        # Then get k elements in total from 2*n and check best combination.
+        # floor(k/2) from class1 and ceil(k/2) from class2
+        k1 = 2
+        k2 = 1
+        final_margin = 0
+        final_m = -1 * a / b
+        final_b = -1 * c / b
+        final_points = None
+        for c_class in [class1, class2]:
+            o_class = class1
+            if c_class is class1:
+                o_class = class2
+            for ck1 in itertools.combinations(c_class, k1):
+                for ck2 in itertools.combinations(o_class, k2):
+                    # here we have the combinations.
+                    # Dummy code so that it doesn´t mark as error
+                    p1 = ck1[0][0:2]
+                    p2 = ck1[1][0:2]
+                    p3 = ck2[0][0:2]
+                    line = p2 - p1
+                    line = line/np.linalg.norm(line)
+                    slope = line[1]/line[0]
+                    d1 = np.linalg.norm(p3-p1)
+                    d2 = np.linalg.norm(p3-p2)
+                    chosen = None
+                    if d1<d2:
+                        chosen = p1
+                    else:
+                        chosen = p2
+                    mpoint = [(chosen[0] + p3[0])/2,(chosen[1] + p3[1])/2]
+
+                    b = mpoint[1] - slope * mpoint[0]
+                    if not calculate_correctness(slope,b, data2):
+                        continue
+                    curr_margin = calculate_margin(slope, b, data2)
+                    if curr_margin > final_margin:
+                        final_m = slope
+                        final_b = b
+                        final_points = [p1,p2,p3]
+                        final_margin=curr_margin
+
+        return final_m, final_b, final_margin, final_points
+
 
 
 
