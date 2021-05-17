@@ -35,10 +35,10 @@ def get_train_data(c1,c2):
 
 def main():
     print("Ejercicio 1 - Perceptron Simple")
-    c1,c2 = generate_separable_points(100)
+    c1,c2 = generate_separable_points(10)
     data = get_train_data(c1,c2)
     
-    sp = SimplePerceptron(data,max_epoch=1000,learning_rate=0.1, visualize=True, calculate_errors=True)
+    sp = SimplePerceptron(data,max_epoch=1000,learning_rate=0.1, visualize=False, calculate_errors=True)
     sp.train()
 
     data = np.hstack((data,np.zeros((data.shape[0],1))))
@@ -46,7 +46,12 @@ def main():
         data[i,3] = sp.predict(data[i,0:2])
 
     print("Error: ", sqrt(sp.error))
+    print("Weights: ", sp.weights)
+    sp.draw()
     # plot_classes(c1,c2)
+    m,b, margin, points = sp.optimus_hiperplane(n=4)
+    sp.draw_with_slope(m,b)
+    print('final points', points)
 
 if __name__ == "__main__":
     main()
