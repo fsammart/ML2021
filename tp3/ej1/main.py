@@ -4,11 +4,11 @@ from simple_perceptron import SimplePerceptron
 from math import sqrt
 
 
-def generate_separable_points(samples=10, margin=0):
+def generate_separable_points(samples=10, threshold=0):
     points = np.random.rand(samples, 2) * 5
 
-    c1= points[points[:,1] > points[:,0]]
-    c2= points[points[:,1] < points[:,0]]
+    c1= points[points[:,1] > points[:,0] + threshold]
+    c2= points[points[:,1] < points[:,0] - threshold]
     return c1,c2
 
 def plot_classes(c1,c2):
