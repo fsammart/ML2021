@@ -1,8 +1,9 @@
 from PIL import Image
 from sklearn import svm
 from sklearn.model_selection import train_test_split
-from utils import get_confusion_matrix, get_precision
+from utils import get_confusion_matrix, get_precision, plot_heatmap, map_color
 import numpy as np
+import cv2
 
 COW = 0
 GRASS = 1
@@ -40,6 +41,8 @@ def run_classifier(c_value, kernel='linear'):
 
     test_confusion = get_confusion_matrix(test_predicted, y_test)
     train_confusion = get_confusion_matrix(train_predicted, y_train)
+    plot_heatmap(test_confusion, f'../confusions/test_c_{c_value}_kernel_{kernel}.png')
+    plot_heatmap(train_confusion, f'../confusions/train_c_{c_value}_kernel_{kernel}.png')
 
     test_precision = get_precision(test_confusion)
     train_precision = get_precision(train_confusion)
@@ -52,14 +55,45 @@ def run_classifier(c_value, kernel='linear'):
     return test_precision, train_precision
 
 
-c_range = np.arange(0.1, 5.2, 0.2)
+def run_c_values():
+    c_range = np.arange(20)
 
-filename = 'results.csv'
-final_string = ''
+    filename = 'c_results_bis.csv'
+    final_string = ''
 
-for c in c_range:
-    test_precision, train_precision = run_classifier(c)
-    final_string += f'{c},linear,{test_precision},{train_precision}\n'
+    for c in c_range:
+        test_precision, train_precision = run_classifier(c)
+        final_string += f'{c},linear,{test_precision},{train_precision}\n'
 
-with open(filename, 'w') as fp:
-    fp.write(final_string)
+
+def run_kernels():
+    kernels = ['linear', 'poly', 'rbf']
+
+    filename = 'kernel_results.csv'
+    final_string = ''
+
+    for ker in kernels:
+        test_precision, train_precision = run_classifier(c_value=1.0, kernel=ker)
+        final_string += f'{1},{ker},{test_precision},{train_precision}\n'
+
+    with open(filename, 'w') as fp:
+        fp.write(final_string)
+
+
+def run_cow(image, c_value=1.0, kernel='linear'):
+    # multiclass support is handled by one-vs-one scheme
+    classifier = svm.SVC(C=c_value, kernel=kernel)
+    classifier.fit(X_train, y_train)
+
+    samples, _ = get_class_data(image, 4)
+    original = np.asarray(Image.open(image))
+
+    predicted = classifier.predict(samples)
+    result_image = np.array(list(map(map_color, predicted))).reshape(original.shape)
+
+    output = np.hstack([original, result_image])
+    im = Image.fromarray(output.astype(np.uint8))
+    im.save('cow_vs_predicted.png')
+
+
+run_cow('../data/cow.jpg')
