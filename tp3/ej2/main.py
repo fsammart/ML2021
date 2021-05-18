@@ -94,6 +94,8 @@ def run_cow(image, c_value=1.0, kernel='linear'):
     output = np.hstack([original, result_image])
     im = Image.fromarray(output.astype(np.uint8))
     im.save('cow_vs_predicted.png')
+    im2 = Image.fromarray(result_image.astype(np.uint8))
+    im2.save("predicted_only.png")
 
 
 run_cow('../data/cow.jpg')

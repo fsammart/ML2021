@@ -1,0 +1,39 @@
+<html>
+
+    <head>
+        <style>
+            #original {
+                position: absolute;
+                z-index: -1;
+            }
+            #predicted {
+                opacity: 0.7;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+
+            <img id="original" src="data/cow.jpg"/>
+            <img id="predicted" src="ej2/predicted_only.png"/>
+        </div>
+        <div>
+            <span>Opacity: </span>
+            <input type="range" id="opacity-selector" min="0" max="1" value="0.7" step="0.02" oninput="updateOpacity()"/>
+        </div>
+    </body>
+
+    <script>
+
+
+        window.onload = function() {
+            slider = document.querySelector("[id=opacity-selector]");
+            pred = document.querySelector("[id=predicted]");
+        }
+
+        function updateOpacity(e) {
+            pred.style.opacity = slider.value
+        }
+    </script>
+</html>
+
