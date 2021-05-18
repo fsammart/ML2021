@@ -104,7 +104,7 @@ class SimplePerceptron:
         else:
             self.error = self.calculate_error()
 
-    def draw_with_slope(self, slopes, draw_natural_separation=True):
+    def draw_with_slope(self, slopes, draw_natural_separation=True, points=None):
         #  Limit plots axis to -5;5
         axes = plt.gca()
         limits = [0,5]
@@ -119,8 +119,10 @@ class SimplePerceptron:
             slope.plot()
             legend.append(slope.legend)
         
-        colors = np.where(self.raw_data[:, 3] > 0, 'red', 'blue')
+        colors = np.where(self.raw_data[:, 2] > 0, 'blue', 'red')
         plt.scatter(self.raw_data[:, 0], self.raw_data[:, 1], color=colors)
+        if points is not None:
+            plt.scatter(points[:,0], points[:,1],color="purple")
         axes.legend(legend)
         plt.show(block=True)
 
@@ -174,13 +176,12 @@ class SimplePerceptron:
         class2 = []
         idx = 0
         while idx < len(data2) and (len(class1)<n or len(class2) <n):
-            curr_class = data2[idx][3]
+            curr_class = data2[idx][2]
             if curr_class == 1 and len(class1)<n:
                 class1.append(data2[idx])
             if curr_class == -1 and len(class2)<n:
                 class2.append(data2[idx])
             idx +=1
-
         # Then get k elements in total from 2*n and check best combination.
         # floor(k/2) from class1 and ceil(k/2) from class2
         k1 = 2
