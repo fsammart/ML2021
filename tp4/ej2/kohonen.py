@@ -2,17 +2,8 @@ import random
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from utils import get_indices_of_k_smallest, euclidean
 
-
-def get_indices_of_k_smallest(arr, k):
-    # https://stackoverflow.com/questions/34226400/find-the-index-of-the-k-smallest-values-of-a-numpy-array
-    idx = np.argpartition(arr.ravel(), k)
-    return np.array(np.unravel_index(idx, arr.shape))[:, range(min(k, 0), max(k, 0))].flatten()
-
-def euclidean(v1):
-    def f(v2):
-        return np.linalg.norm(v1-v2)
-    return f
 
 def init_neuron(rand_weights, n_features, data):
     def f(x):

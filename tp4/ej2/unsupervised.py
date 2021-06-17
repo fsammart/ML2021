@@ -1,5 +1,5 @@
 from sklearn.datasets import make_blobs
-from kohonen import Kohonen
+from tp4.ej2.kohonen import Kohonen
 
 
 feats = 1
