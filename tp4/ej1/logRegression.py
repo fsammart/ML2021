@@ -1,12 +1,13 @@
 import csv
 from collections import defaultdict
-from tp4.utils.utils import *
+from utils import *
 from sklearn.linear_model import LogisticRegression
 import pandas as pd
+import statsmodels.api as sm
 
 
 def read_data(attrs, selected_attr, target_name):
-    with open("../data/acath.csv") as f:
+    with open("tp4/data/acath.csv") as f:
         data = list(csv.DictReader(f, delimiter=';'))
         for row in data:
             for attr in attrs:
@@ -79,12 +80,18 @@ def logistic_regression(attributes, selected_attributes, class_name):
     training_amount = int(train_p * len(data))
     train, test = divide_data(data, training_amount)
 
-
     train_x, train_y = separate_target_variable(train, selected_attributes, class_name)
     test_x, test_y = separate_target_variable(test, selected_attributes, class_name)
 
     lr_model = lr_train(train_x, train_y)
     predictions = lr_predict(lr_model, test_x)
+
+    [print(f'X{i+1}=>\'{x}\'', end=". ") for i,x in enumerate(selected_attributes)]
+    print()
+    # Use this library to get stats. Cannot do it without sklearn
+    logit_model=sm.Logit(train_y,train_x)
+    result=logit_model.fit()
+    print(result.summary())
 
     # Use score method to get accuracy of model
     score = lr_model.score(test_x, test_y)
@@ -116,6 +123,7 @@ print("Logistic Regression")
 print("#" * 20)
 
 lr, training_data, test_data = logistic_regression(attributes, selected_attributes, class_name)
+
 prob_list = [70, 1, 150]  # age, duration, choleste
 print(f'Probabilities for {prob_list}')
 probabilities = lr.predict_proba(np.array(prob_list).reshape(-1, 1).T)
