@@ -83,14 +83,25 @@ def logistic_regression(attributes, selected_attributes, class_name):
     train_x, train_y = separate_target_variable(train, selected_attributes, class_name)
     test_x, test_y = separate_target_variable(test, selected_attributes, class_name)
 
+
     lr_model = lr_train(train_x, train_y)
     predictions = lr_predict(lr_model, test_x)
 
-    [print(f'X{i+1}=>\'{x}\'', end=". ") for i,x in enumerate(selected_attributes)]
-    print()
-    # Use this library to get stats. Cannot do it without sklearn
-    logit_model=sm.Logit(train_y,train_x)
-    result=logit_model.fit()
+    pdt_x = pd.DataFrame(train_x)
+    pdt_x.columns = selected_attributes
+
+    # TODO: check how to handle categorical features
+    if "sex" in selected_attributes:
+        pdt_x["sex"] = pdt_x["sex"].astype("category")
+        pdt_x = pd.get_dummies(pdt_x)
+
+    # Adding constant to train_x to add the Intercept term
+    # https://stats.stackexchange.com/questions/203740/logistic-regression-scikit-learn-vs-statsmodels
+    pdt_x = sm.add_constant(pdt_x)
+    pdt_y = pd.DataFrame(train_y)
+
+    logit_model=sm.Logit(pdt_y,pdt_x.astype(float))
+    result=logit_model.fit(maxiter=100)
     print(result.summary())
 
     # Use score method to get accuracy of model
@@ -117,7 +128,7 @@ def logistic_regression(attributes, selected_attributes, class_name):
 
 class_name = "sigdz"
 attributes = ['sex', 'age', 'cad.dur', 'choleste', 'tvdlm']
-selected_attributes = ['age', 'cad.dur', 'choleste']
+selected_attributes = ['sex', 'age', 'cad.dur', 'choleste']
 print("#" * 20)
 print("Logistic Regression")
 print("#" * 20)
@@ -126,6 +137,6 @@ lr, training_data, test_data = logistic_regression(attributes, selected_attribut
 
 prob_list = [70, 1, 150]  # age, duration, choleste
 print(f'Probabilities for {prob_list}')
-probabilities = lr.predict_proba(np.array(prob_list).reshape(-1, 1).T)
-print(f"Probability sigdz = 1, {round(probabilities[0][1], 3)}")
-print(f"Probability sigdz = 0, {round(probabilities[0][0], 3)}")
+# probabilities = lr.predict_proba(np.array(prob_list).reshape(-1, 1).T)
+# print(f"Probability sigdz = 1, {round(probabilities[0][1], 3)}")
+# print(f"Probability sigdz = 0, {round(probabilities[0][0], 3)}")
