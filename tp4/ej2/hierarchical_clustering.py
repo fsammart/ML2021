@@ -13,7 +13,6 @@ class HierarchicalClustering:
         self.k = k
         self.cluster_per_sample = np.arange(0, len(self.samples))
 
-
     def get_centroids(self, clusters):
         centroids = []
         for c in clusters:

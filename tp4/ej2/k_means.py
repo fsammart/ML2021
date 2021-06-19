@@ -53,7 +53,6 @@ class KMeans:
                 map(self.get_sample_cluster(clusters, centroids), self.samples), dtype=int
             )
             if (self.cluster_per_sample == current_clusters_per_sample).all():
-                print(f"Algorithm found a minimum at {j}.")
                 return
             self.cluster_per_sample = current_clusters_per_sample
 
@@ -86,14 +85,25 @@ class KMeans:
         return info
 
 
-def code_method(max_k, samples, epochs, filename):
-    variances = []
+def code_method(max_k, samples, epochs, filename, repeat=10):
+    averages = []
+    stds = []
+
     for k in np.arange(1, max_k+1):
-        k_means_model = KMeans(k, samples)
-        k_means_model.run(epochs)
-        # we append final variance (min)
-        variances.append(k_means_model.variances[-1])
-    plt.plot(np.arange(1, max_k+1), variances)
+        k_variances = []
+        for i in range(repeat):
+            k_means_model = KMeans(k, samples)
+            k_means_model.run(epochs)
+            # we append final variance (min)
+            k_variances.append(k_means_model.variances[-1])
+        averages.append(np.mean(k_variances))
+        stds.append(np.std(k_variances))
+        print(f'Finished with k={k}')
+
+    plt.errorbar(
+        np.arange(1, max_k+1), averages, stds,
+        linestyle='-', label='K', capsize=5, marker='o'
+    )
     plt.title("Avg. variance of clusters")
     plt.xlabel("K")
     plt.ylabel("Variance, C(W)")
@@ -106,7 +116,7 @@ data, y = make_blobs(n_samples=200, n_features=2, centers=10)
 # k_means = KMeans(k_clusters, data)
 # k_means.run(1000)
 # k_means.plot_variances('variances_per_epoch.jpg')
-code_method(40, data, 1000, 'code_method.jpg')
+code_method(5, data, 1000, 'code_method.jpg')
 
 
 
