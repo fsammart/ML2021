@@ -14,16 +14,16 @@ class KMeans:
         # clusters are tuples (cluster_number, cluster_centroid)
         self.clusters = []
 
-        # variances is a list of arrays [v1, v2, ..., vn] where
-        # each array holds variance per cluster per epoch
+        # variances is an array of the average of W(Ck) for each epoch
+        # on lesson the formula is not average (cumulative) but since
+        # there can a cluster that disappears, we are changing it to avg.
+        # TODO: ask about this
         self.variances = []
 
         for i in range(k):
             self.clusters.append((i, np.zeros(shape=self.samples.shape[1])))
-            self.variances.append([])
         self.clusters = np.array(self.clusters, dtype=object)
 
-        print(f'Initial clusters with length {len(self.clusters)} and variances {len(self.variances)}')
 
     def get_sample_cluster(self, sample):
         distance = euclidean(sample)
@@ -60,6 +60,7 @@ class KMeans:
             self.cluster_per_sample = current_clusters_per_sample
 
     def compute_variances(self):
+        cluster_variances = []
         for cluster in self.clusters:
             cluster_elems_indexes = np.where(self.cluster_per_sample == cluster[0])[0]
             if len(cluster_elems_indexes) > 0:  # this condition is just in case
@@ -69,16 +70,16 @@ class KMeans:
                     distance = euclidean(elements[i])
                     for j in np.arange(i+1, len(elements)):
                         distances.append(distance(elements[j]))
-                self.variances[cluster[0]].append(np.mean(distances))
+                cluster_variances.append(np.mean(distances))
+        variance_avg = np.mean(cluster_variances)
+        self.variances.append(variance_avg)
 
-    def plot_variances(self):
-        labels = np.arange(len(self.variances))
-        for v in self.variances:
-            plt.plot(np.arange(len(v)), v)
-        plt.legend(labels)
-        plt.title("Variance per cluster")
+    def plot_variances(self, filename):
+        plt.plot(np.arange(len(self.variances)), self.variances)
+        plt.title("Avg. variance of clusters")
         plt.xlabel("Epoch")
         plt.ylabel("Variance, C(W)")
+        plt.savefig(f'./results/{filename}')
         plt.show()
 
     def __str__(self, complete=False):
@@ -91,9 +92,30 @@ class KMeans:
         return info
 
 
-k_clusters = 5
-data, y = make_blobs(n_samples=400, n_features=2, centers=10)
-k_means = KMeans(k_clusters, data)
-k_means.run(1000)
-k_means.plot_variances()
-print(k_means.__str__(complete=True))
+def code_method(max_k, samples, epochs, filename):
+    variances = []
+    for k in np.arange(1, max_k+1):
+        k_means_model = KMeans(k, samples)
+        k_means_model.run(epochs)
+        # we append final variance (min)
+        variances.append(k_means_model.variances[-1])
+    plt.plot(np.arange(1, max_k+1), variances)
+    plt.title("Avg. variance of clusters")
+    plt.xlabel("K")
+    plt.ylabel("Variance, C(W)")
+    plt.savefig(f'./results/{filename}')
+    plt.show()
+
+
+# k_clusters = 5
+data, y = make_blobs(n_samples=200, n_features=2, centers=10)
+# k_means = KMeans(k_clusters, data)
+# k_means.run(1000)
+# k_means.plot_variances('variances_per_epoch.jpg')
+#print(k_means.__str__(complete=False))
+
+# TODO: this is giving weird results
+code_method(40, data, 1000, 'code_method.jpg')
+
+
+
