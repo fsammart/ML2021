@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
-from utils import euclidean
+from utils import euclidean, pairwise_euclidean
 
 class KMeans:
 
@@ -23,55 +23,50 @@ class KMeans:
             self.clusters.append((i, np.zeros(shape=self.samples.shape[1])))
         self.clusters = np.array(self.clusters, dtype=object)
 
-
-    def get_sample_cluster(self, sample):
-        distance = euclidean(sample)
-        min_distance = -1
-        closest_cluster = -1
-        for cluster in self.clusters:
-            d = distance(cluster[1])
-            if min_distance == -1 or d < min_distance:
-                min_distance = d
-                closest_cluster = cluster[0]
-        return closest_cluster
+    @staticmethod
+    def get_sample_cluster(clusters, centroids):
+        def f(sample):
+            distance = euclidean(sample)
+            min_distance = -1
+            closest_cluster = -1
+            for cluster, centroid in zip(clusters, centroids):
+                d = distance(centroid)
+                if min_distance == -1 or d < min_distance:
+                    min_distance = d
+                    closest_cluster = cluster
+            return closest_cluster
+        return f
 
     def run(self, epochs):
         for j in range(epochs):
-            current_clusters = []
-
+            clusters = np.unique(self.cluster_per_sample)
+            centroids = []
             # compute centroid for each cluster
-            for cluster in self.clusters:
-                cluster_elems_indexes = np.where(self.cluster_per_sample == cluster[0])[0]
-                if len(cluster_elems_indexes) > 0:
-                    centroid = self.samples[cluster_elems_indexes].mean(axis=0)
-                    cluster[1] = centroid
-                    current_clusters.append(cluster)
+            for c in clusters:
+                cluster_elems_indexes = np.where(self.cluster_per_sample == c)[0]
+                centroids.append(self.samples[cluster_elems_indexes].mean(axis=0))
 
-            # replace old clusters with new clusters
-            self.clusters = np.array(current_clusters)
-            self.compute_variances()
+            self.compute_variances(clusters)
 
             # compute new cluster for each observation
-            current_clusters_per_sample = np.fromiter(map(self.get_sample_cluster, self.samples), dtype=int)
+            current_clusters_per_sample = np.fromiter(
+                map(self.get_sample_cluster(clusters, centroids), self.samples), dtype=int
+            )
             if (self.cluster_per_sample == current_clusters_per_sample).all():
                 print(f"Algorithm found a minimum at {j}.")
                 return
             self.cluster_per_sample = current_clusters_per_sample
 
-    def compute_variances(self):
+    def compute_variances(self, clusters):
         cluster_variances = []
-        for cluster in self.clusters:
-            cluster_elems_indexes = np.where(self.cluster_per_sample == cluster[0])[0]
-            if len(cluster_elems_indexes) > 0:  # this condition is just in case
-                distances = []
-                elements = self.samples[cluster_elems_indexes]
-                for i in range(len(elements)):
-                    distance = euclidean(elements[i])
-                    for j in np.arange(i+1, len(elements)):
-                        distances.append(distance(elements[j]))
-                cluster_variances.append(np.mean(distances))
-        variance_avg = np.mean(cluster_variances)
-        self.variances.append(variance_avg)
+        for c in clusters:
+            cluster_elems_indexes = np.where(self.cluster_per_sample == c)[0]
+            # TODO: should we consider distance = 0 if there is only one element inside the cluster ?
+            distances = pairwise_euclidean(self.samples[cluster_elems_indexes])
+            assert len(distances) > 0
+            cluster_variances.append(distances.mean())
+
+        self.variances.append(np.array(cluster_variances).mean())
 
     def plot_variances(self, filename):
         plt.plot(np.arange(len(self.variances)), self.variances)
@@ -111,9 +106,6 @@ data, y = make_blobs(n_samples=200, n_features=2, centers=10)
 # k_means = KMeans(k_clusters, data)
 # k_means.run(1000)
 # k_means.plot_variances('variances_per_epoch.jpg')
-#print(k_means.__str__(complete=False))
-
-# TODO: this is giving weird results
 code_method(40, data, 1000, 'code_method.jpg')
 
 

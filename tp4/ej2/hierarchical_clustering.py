@@ -1,7 +1,6 @@
 import numpy as np
-from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.datasets import make_blobs
-from utils import pairwise_euclidean, get_min_idx
+from utils import pairwise_euclidean_clusters, get_min_idx
 
 class HierarchicalClustering:
 
@@ -27,7 +26,7 @@ class HierarchicalClustering:
         while self.k < len(np.unique(self.cluster_per_sample)):
             clusters = np.unique(self.cluster_per_sample)
             centroids = self.get_centroids(clusters)
-            distances, indexes = pairwise_euclidean(centroids, clusters)
+            distances, indexes = pairwise_euclidean_clusters(centroids, clusters)
             (c1, c2) = indexes[get_min_idx(distances)]
             c2_elems_indexes = np.where(self.cluster_per_sample == c2)[0]
             for i in c2_elems_indexes:
@@ -35,6 +34,5 @@ class HierarchicalClustering:
 
 
 data, y = make_blobs(n_samples=4, n_features=1, centers=2)
-print(data)
 hc = HierarchicalClustering(data, k=2)
 hc.run()

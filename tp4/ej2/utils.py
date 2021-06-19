@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 
 def get_indices_of_k_smallest(arr, k):
@@ -8,18 +9,39 @@ def get_indices_of_k_smallest(arr, k):
 
 def euclidean(v1):
     def f(v2):
-        return np.linalg.norm(v1-v2)
+        #return np.linalg.norm(v1-v2)
+        result = np.sqrt(np.sum(np.square(v1 - v2)))
+        assert math.isnan(result) is False
+        return result
     return f
 
 
-def pairwise_euclidean(elements, clusters):
+def pairwise_euclidean(elements):
+    distances = []
+    if len(elements) == 1:
+        distances.append(0)
+    else:
+        for i in range(len(elements)):
+            distance = euclidean(elements[i])
+            for j in np.arange(i + 1, len(elements)):
+                distances.append(distance(elements[j]))
+    return np.array(distances)
+
+
+def pairwise_euclidean_clusters(centroids, clusters):
     distances = []
     indexes = []
-    for i in range(len(elements)):
-        distance = euclidean(elements[i])
-        for j in np.arange(i + 1, len(elements)):
-            distances.append(distance(elements[j]))
-            indexes.append(tuple([clusters[i], clusters[j]]))
+
+    # This case should not happen
+    if len(centroids) == 1:
+        distances.append(0)
+        indexes.append(tuple([clusters[0], clusters[0]]))
+    else:
+        for i in range(len(centroids)):
+            distance = euclidean(centroids[i])
+            for j in np.arange(i + 1, len(centroids)):
+                distances.append(distance(centroids[j]))
+                indexes.append(tuple([clusters[i], clusters[j]]))
     return np.array(distances), indexes
 
 
