@@ -55,3 +55,17 @@ def get_min_idx(array):
             min_value = array[i]
             index = i
     return index
+
+
+def get_sample_cluster(clusters, centroids):
+    def f(sample):
+        distance = euclidean(sample)
+        min_distance = -1
+        closest_cluster = -1
+        for cluster, centroid in zip(clusters, centroids):
+            d = distance(centroid)
+            if min_distance == -1 or d < min_distance:
+                min_distance = d
+                closest_cluster = cluster
+        return closest_cluster
+    return f
