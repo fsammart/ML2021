@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from tp4.ej2.kohonen import Kohonen
-from tp4.ej2.k_means import KMeans
+from tp4.ej2.k_means import KMeans, code_method
 from tp4.ej2.hierarchical_clustering import HierarchicalClustering
 
 # returns pandas df
@@ -34,6 +34,33 @@ def scale_data(df):
     scaled = scaler.fit_transform(np_df)
     return scaler, pd.DataFrame(scaled, columns=headers)
 
+
+def hierarchical_clustering_program(train, test, train_y, test_y):
+    # train section
+    hc = HierarchicalClustering(np.array(train), k=2)
+    hc.run()
+    hc.add_cluster_classification(np.array(train_y))
+    # there is the possibility of both having the same label. For now, we are leaving it that way
+    # TODO: discuss.
+    print(f'Classes for HC are {hc.cluster_classifications} for clusters {hc.clusters}')
+
+    # test section
+    predictions = hc.predict(np.array(test))
+    # TODO: metrics to evaluate
+
+
+def k_means_program(train, test, train_y, test_y):
+    # train section
+    k_means = KMeans(2, np.array(train))
+    k_means.run(1000)
+    k_means.add_cluster_classification(np.array(train_y))
+    print(f'Classes for KMeans are {k_means.cluster_classifications} for clusters {k_means.clusters}')
+
+    # test section
+    predictions = k_means.predict(np.array(test))
+    # TODO: metrics to evaluate
+
+
 # ************ MAIN PROGRAM ************ #
 
 attributes = ['sex', 'age', 'cad.dur', 'choleste']
@@ -49,20 +76,11 @@ data = dataframe[attributes]
 labels = dataframe[label]
 std_scaler, data = scale_data(data)
 
-train, test, train_y, test_y = train_test_split(data, labels, test_size=0.97, random_state=42) #TODO: change 0.9
-print(f'{len(train)} train records and {len(test)} test records')
+x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.7, random_state=42) #TODO: change 0.9
+print(f'{len(x_train)} train records and {len(x_test)} test records')
 
-# Hierarchical clustering, TRAIN.
-hc = HierarchicalClustering(np.array(train), k=2)
-hc.run()
-hc.add_cluster_classification(np.array(train_y))
-# there is the possibility of both having the same label. For now, we are leaving it that way
-# TODO: discuss.
-print(f'Classes for HC are {hc.cluster_classifications} for clusters {hc.clusters}')
-
-# Hierarchical clustering, TEST.
-predictions = hc.predict(np.array(test))
-# TODO: metrics to evaluate
+hierarchical_clustering_program(x_train, x_test, y_train, y_test)
+k_means_program(x_train, x_test, y_train, y_test)
 
 # feats = 1
 # k = 10

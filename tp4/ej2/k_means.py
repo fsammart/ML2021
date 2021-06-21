@@ -9,27 +9,30 @@ class KMeans:
         self.samples = samples
         self.cluster_per_sample = np.random.randint(0, k, len(samples))
 
-        # clusters are tuples (cluster_number, cluster_centroid)
-        self.clusters = []
-
         # variances is an array of the average of W(Ck) for each epoch
         # on lesson the formula is not average (cumulative) but since
         # there can a cluster that disappears, we are changing it to avg.
         # TODO: ask about this
         self.variances = []
 
-        for i in range(k):
-            self.clusters.append((i, np.zeros(shape=self.samples.shape[1])))
-        self.clusters = np.array(self.clusters, dtype=object)
+        # this will be initialized when calling add_cluster_classification
+        self.cluster_classifications = None
+        self.clusters = None
+        self.centroids = None
+
+    def get_centroids(self, clusters):
+        centroids = []
+        for c in clusters:
+            cluster_elems_indexes = np.where(self.cluster_per_sample == c)[0]
+            centroid = self.samples[cluster_elems_indexes].mean(axis=0)
+            centroids.append(centroid)
+        return centroids
 
     def run(self, epochs):
         for j in range(epochs):
             clusters = np.unique(self.cluster_per_sample)
-            centroids = []
             # compute centroid for each cluster
-            for c in clusters:
-                cluster_elems_indexes = np.where(self.cluster_per_sample == c)[0]
-                centroids.append(self.samples[cluster_elems_indexes].mean(axis=0))
+            centroids = self.get_centroids(clusters)
 
             self.compute_variances(clusters)
 
@@ -40,6 +43,27 @@ class KMeans:
             if (self.cluster_per_sample == current_clusters_per_sample).all():
                 return
             self.cluster_per_sample = current_clusters_per_sample
+
+    # this should be called only when finishing run
+    def add_cluster_classification(self, labels):
+        cluster_classifications = []
+        clusters = np.unique(self.cluster_per_sample)
+        for c in clusters:
+            cluster_elems_indexes = np.where(self.cluster_per_sample == c)[0]
+            cluster_labels = labels[cluster_elems_indexes]
+            print(f'Counts for cluster {c} are {np.bincount(cluster_labels[:, 0])}')
+            winner = np.bincount(cluster_labels[:, 0]).argmax()
+            cluster_classifications.append(winner)
+
+        self.cluster_classifications = cluster_classifications
+        self.clusters = clusters.tolist()
+        self.centroids = self.get_centroids(clusters)
+
+    def predict(self, samples):
+        predictor = get_sample_cluster(self.clusters, self.centroids)
+        winner_clusters = list(map(predictor, samples))
+        predictions = list(map(lambda c: self.cluster_classifications[self.clusters.index(c)], winner_clusters))
+        return predictions
 
     def compute_variances(self, clusters):
         cluster_variances = []
@@ -60,15 +84,6 @@ class KMeans:
         plt.ylabel("Variance, C(W)")
         plt.savefig(f'./results/{filename}')
         plt.show()
-
-    def __str__(self, complete=False):
-        info = ''
-        for cluster in self.clusters:
-            info += f'Cluster {cluster[0]} with centroid {cluster[1]}\n'
-        if complete:
-            for (sample,cluster) in zip(self.samples, self.cluster_per_sample):
-                info += f'Sample {sample} correspond to cluster {cluster}\n'
-        return info
 
 
 def code_method(max_k, samples, epochs, filename, repeat=10):
@@ -96,12 +111,3 @@ def code_method(max_k, samples, epochs, filename, repeat=10):
     plt.ylabel("Variance, C(W)")
     plt.savefig(f'./results/{filename}')
     plt.show()
-
-#
-# # TODO: standardize data
-# # k_clusters = 5
-# data, y = make_blobs(n_samples=200, n_features=2, centers=10)
-# # k_means = KMeans(k_clusters, data)
-# # k_means.run(1000)
-# # k_means.plot_variances('variances_per_epoch.jpg')
-# code_method(30, data, 1000, 'code_method.jpg')
