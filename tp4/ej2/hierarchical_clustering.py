@@ -1,5 +1,6 @@
 import numpy as np
-from utils import pairwise_euclidean_clusters, get_min_idx, get_sample_cluster
+import sys
+from tp4.ej2.utils import pairwise_euclidean_clusters, get_min_idx, get_sample_cluster, euclidean, get_two_closest
 
 class HierarchicalClustering:
 
@@ -16,6 +17,13 @@ class HierarchicalClustering:
         self.cluster_classifications = None
         self.clusters = None
         self.centroids = None
+        self.distances = np.zeros((len(samples), len(samples)))
+        # initialize distance matrix
+        for idx1, cords1 in enumerate(samples) :
+            for idx2, cords2 in enumerate(samples) :
+                self.distances[idx1][idx2] = euclidean(cords1)(cords2)
+        # diagonal with inf values.
+        np.fill_diagonal(self.distances, sys.maxsize)
 
     def get_centroids(self, clusters):
         centroids = []
@@ -29,12 +37,13 @@ class HierarchicalClustering:
         while self.k < len(np.unique(self.cluster_per_sample)):
             clusters = np.unique(self.cluster_per_sample)
             print(f'Dealing with {len(clusters)} clusters ({self.k} goal).')
-            centroids = self.get_centroids(clusters)
-            distances, indexes = pairwise_euclidean_clusters(centroids, clusters)
-            (c1, c2) = indexes[get_min_idx(distances)]
-            c2_elems_indexes = np.where(self.cluster_per_sample == c2)[0]
-            for i in c2_elems_indexes:
-                self.cluster_per_sample[i] = c1
+            centroids = self.get_centroids(self.cluster_per_sample)
+            c1, c2 = get_two_closest(centroids, self.distances, self.cluster_per_sample, self.samples)
+            # distances, indexes = pairwise_euclidean_clusters(centroids, clusters)
+            # (c1, c2) = indexes[get_min_idx(distances)]
+            # c2_elems_indexes = np.where(self.cluster_per_sample == c2)[0]
+            # for i in c2_elems_indexes:
+            #     self.cluster_per_sample[i] = c1
 
     # this should be called only when finishing run
     def add_cluster_classification(self, labels):

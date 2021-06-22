@@ -37,7 +37,7 @@ def scale_data(df):
 
 def hierarchical_clustering_program(train, test, train_y, test_y):
     # train section
-    hc = HierarchicalClustering(np.array(train), k=2)
+    hc = HierarchicalClustering(np.array(train), k=10)
     hc.run()
     hc.add_cluster_classification(np.array(train_y))
     # there is the possibility of both having the same label. For now, we are leaving it that way
