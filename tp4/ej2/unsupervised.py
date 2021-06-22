@@ -66,9 +66,9 @@ def run_program(kohonen=False, k_means=False, hc=False, balance=None, remove_dup
         dataframe = with_removed
     print(dataframe_info)
 
-    replacement_info = replace_nan(dataframe)
-    #print('Nan values per column in original dataframe')
-    #print(replacement_info)
+    replacement_info = replace_nan(dataframe, differentiate_label=True)
+    print('Nan values per column in original dataframe')
+    print(replacement_info)
 
     data = dataframe[attributes]
     labels = dataframe[label]

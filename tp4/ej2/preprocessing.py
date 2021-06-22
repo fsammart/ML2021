@@ -1,3 +1,6 @@
+import math
+
+import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
@@ -35,11 +38,24 @@ def load_data(filename, attributes=None, balance=None):
 # inplace replaces nan with most frequent value for each column
 def replace_nan(df: pd.DataFrame, differentiate_label=False):
     nan_counts = []
-    columns = df.columns
-    for col in columns:
-        nan_counts.append((col, df[col].isna().sum()))
-        frequent = df[col].mode()[0]
-        df[col] = df[col].fillna(float(frequent))
+    if differentiate_label:
+        without_disease = df[df['sigdz'] == 0]
+        with_disease = df[df['sigdz'] == 1]
+        mode_without_disease = float(without_disease['choleste'].mode()[0])
+        mode_with_disease = float(with_disease['choleste'].mode()[0])
+
+        print(f'Mode without disease is {mode_without_disease}')
+        print(f'Mode with disease is {mode_with_disease}')
+
+        for index, row in df.iterrows():
+            if math.isnan(row['choleste']):
+                df['choleste'][index] = mode_with_disease if row['sigdz'] == 1 else mode_without_disease
+    else:
+        columns = df.columns
+        for col in columns:
+            nan_counts.append((col, df[col].isna().sum()))
+            frequent = df[col].mode()[0]
+            df[col] = df[col].fillna(float(frequent))
     return nan_counts
 
 
