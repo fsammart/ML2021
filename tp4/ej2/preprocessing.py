@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 
@@ -34,7 +33,7 @@ def load_data(filename, attributes=None, balance=None):
 
 
 # inplace replaces nan with most frequent value for each column
-def replace_nan(df: pd.DataFrame):
+def replace_nan(df: pd.DataFrame, differentiate_label=False):
     nan_counts = []
     columns = df.columns
     for col in columns:
@@ -63,6 +62,11 @@ def get_dataset_info(df):
     zeros_qty = len(df_zeros)
     ones_qty = len(df_ones)
     info += f'{zeros_qty} registers have value 0 and {ones_qty} registers have value 1\n'
+
+    nan_df = df[df['choleste'].isna()]
+    nan_without_disease = nan_df[nan_df['sigdz'] == 0]
+    nan_with_disease = nan_df[nan_df['sigdz'] == 1]
+    info += f'Out of {len(nan_df)} registers with cholesterol nan, {len(nan_with_disease)} sigdz=1, {len(nan_without_disease)} sigdz=0\n'
 
     nan_choleste_qty = df['choleste'].isna().sum()
     info += f'Out of {total_registers}, {nan_choleste_qty} are nan in choleste column ({round(nan_choleste_qty/total_registers, 4)})\n'

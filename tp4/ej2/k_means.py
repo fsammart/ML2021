@@ -43,6 +43,7 @@ class KMeans:
             if (self.cluster_per_sample == current_clusters_per_sample).all():
                 return
             self.cluster_per_sample = current_clusters_per_sample
+            print(f'Finished epoch {j}')
 
     # this should be called only when finishing run
     def add_cluster_classification(self, labels):

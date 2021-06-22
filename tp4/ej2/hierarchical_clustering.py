@@ -1,6 +1,12 @@
 import numpy as np
 import sys
-from tp4.ej2.utils import pairwise_euclidean_clusters, get_min_idx, get_sample_cluster, euclidean, get_two_closest
+from tp4.ej2.utils import (
+    pairwise_euclidean_clusters,
+    get_min_idx,
+    get_sample_cluster,
+    euclidean,
+    get_two_closest
+)
 
 class HierarchicalClustering:
 
@@ -38,7 +44,8 @@ class HierarchicalClustering:
             clusters = np.unique(self.cluster_per_sample)
             print(f'Dealing with {len(clusters)} clusters ({self.k} goal).')
             centroids = self.get_centroids(self.cluster_per_sample)
-            c1, c2 = get_two_closest(centroids, self.distances, self.cluster_per_sample, self.samples)
+            _, _ = get_two_closest(centroids, self.distances, self.cluster_per_sample, self.samples)
+            print(f'Clusters per sample > {self.cluster_per_sample}')
             # distances, indexes = pairwise_euclidean_clusters(centroids, clusters)
             # (c1, c2) = indexes[get_min_idx(distances)]
             # c2_elems_indexes = np.where(self.cluster_per_sample == c2)[0]

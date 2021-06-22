@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import sys
+import matplotlib.pyplot as plt
 
 
 def get_indices_of_k_smallest (arr, k) :
@@ -125,3 +126,30 @@ def get_sample_cluster (clusters, centroids) :
         return closest_cluster
 
     return f
+
+
+def get_confusion_matrix(predictions, truths):
+    matrix = np.zeros(shape=(2, 2))
+    for pred, truth in zip(np.array(predictions), np.array(truths)):
+        matrix[truth][pred] += 1
+    return matrix
+
+
+def get_precision(confusion_matrix):
+    sum_columns = np.sum(confusion_matrix, axis=0)
+    diagonal = np.diagonal(confusion_matrix)
+    return np.mean(diagonal/sum_columns)
+
+
+def plot_heatmap(matrix, filename, v_min=0, v_max=1052):
+    fig, ax = plt.subplots()
+    ax.matshow(matrix, cmap=plt.cm.Blues, vmin=v_min, vmax=v_max)
+
+    for i, j in np.ndindex(matrix.shape):
+        c = matrix[i][j]
+        ax.text(j, i, str(c), va='center', ha='center')
+
+    plt.xlabel("Predicción")
+    plt.ylabel("Valor Real")
+    plt.savefig(f'{filename}', bbox_inches='tight')
+    plt.close()
