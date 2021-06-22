@@ -8,38 +8,49 @@ from tp4.ej2.utils import get_confusion_matrix, get_precision, plot_heatmap
 
 
 def hierarchical_clustering_program(train, test, train_y, test_y, filename):
-    # train section
-    hc = HierarchicalClustering(np.array(train), k=10)
-    hc.run()
-    hc.add_cluster_classification(np.array(train_y))
-    # there is the possibility of both having the same label. For now, we are leaving it that way
-    # TODO: discuss.
-    print(f'Classes for HC are {hc.cluster_classifications} for clusters {hc.clusters}')
 
-    # test section
-    predictions = hc.predict(np.array(test))
-    # TODO: metrics to evaluate
+    clusters_group = [50, 40, 30, 20, 10, 5, 2]
+    with open('./results/hierarchical_clustering_metrics.csv', mode='a+') as f:
+
+        for clusters in clusters_group:
+            # train section
+            hc = HierarchicalClustering(np.array(train), k=clusters)
+            hc.run()
+            hc.add_cluster_classification(np.array(train_y))
+            print(f'Classes for HC are {hc.cluster_classifications} for clusters {hc.clusters}')
+
+            # test section
+            predictions = hc.predict(np.array(test))
+
+            confusion_matrix = get_confusion_matrix(predictions, test_y)
+            precision = get_precision(confusion_matrix)
+            plot_heatmap(confusion_matrix, f'./results/{filename}_{clusters}_clusters_confusion.jpg')
+
+            f.write(f'hierarchical clustering,{clusters},{round(precision, 4)}\n')
 
 
 def k_means_program(train, test, train_y, test_y, filename):
 
     clusters_group = [50, 40, 30, 20, 10, 5, 2]
+    with open('./results/k_means_metrics.csv', mode='a+') as f:
 
-    for clusters in clusters_group:
-        # train section
-        k_means = KMeans(clusters, train)
-        k_means.run(4000)
-        k_means.add_cluster_classification(train_y)
-        print(f'Classes for KMeans are {k_means.cluster_classifications} for clusters {k_means.clusters}')
-        k_means.plot_variances(f'{filename}_variances_per_epoch.jpg')
+        for clusters in clusters_group:
+            for _ in range(10):
+                # train section
+                k_means = KMeans(clusters, train)
+                k_means.run(4000)
+                k_means.add_cluster_classification(train_y)
+                print(f'Classes for KMeans are {k_means.cluster_classifications} for clusters {k_means.clusters}')
+                k_means.plot_variances(f'{filename}_variances_per_epoch.jpg')
 
-        # test section
-        predictions = k_means.predict(test)
+                # test section
+                predictions = k_means.predict(test)
 
-        confusion_matrix = get_confusion_matrix(predictions, test_y)
-        precision = get_precision(confusion_matrix)
-        plot_heatmap(confusion_matrix, f'./results/{filename}_{clusters}_clusters_confusion.jpg')
-        print(f'Precision for {filename} with {clusters} clusters is {round(precision, 4)}')
+                confusion_matrix = get_confusion_matrix(predictions, test_y)
+                precision = get_precision(confusion_matrix)
+                plot_heatmap(confusion_matrix, f'./results/{filename}_{clusters}_clusters_confusion.jpg')
+
+                f.write(f'k means,{clusters},{round(precision, 4)}\n')
 
 
 def kohonen_program(train, test, train_y, test_y, filename):
@@ -96,10 +107,10 @@ def run_program(kohonen=False, k_means=False, hc=False, balance=None, remove_dup
 
 
 if __name__ == '__main__':
-    run_program(k_means=False, kohonen=False, hc=False, remove_duplicates=True)
-    # print("\n*** NO DUPLICATES DATA ****\n")
-    # run_program(k_means=True, kohonen=False, hc=False, remove_duplicates=True)
-    # print("*** RAW DATA ****\n")
-    # run_program(k_means=True, kohonen=False, hc=False, balance=None)
-    # print("\n*** BALANCED DATA ****\n")
-    # run_program(k_means=True, kohonen=False, hc=False, balance='sigdz')
+    run_program(k_means=True, kohonen=False, hc=False, remove_duplicates=True)
+    run_program(k_means=True, kohonen=False, hc=False, balance=None)
+    run_program(k_means=True, kohonen=False, hc=False, balance='sigdz')
+
+    run_program(k_means=False, kohonen=False, hc=True, remove_duplicates=True)
+    run_program(k_means=False, kohonen=False, hc=True, balance=None)
+    run_program(k_means=False, kohonen=False, hc=True, balance='sigdz')
