@@ -25,11 +25,11 @@ def get_confusion_matrix(predictions, truths):
 
 
 def get_precision(confusion_matrix):
-    print(confusion_matrix)
+    # print(confusion_matrix)
     sum_columns = np.sum(confusion_matrix, axis=0)
     diagonal = np.diagonal(confusion_matrix)
-    print(diagonal)
-    print(sum_columns) 
+    # print(diagonal)
+    # print(sum_columns) 
     return np.mean(diagonal/sum_columns)
 
 def plot_c_results():

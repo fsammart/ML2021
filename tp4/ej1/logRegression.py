@@ -1,4 +1,5 @@
 import csv
+import random
 from collections import defaultdict
 from utils import *
 from sklearn.linear_model import LogisticRegression
@@ -16,6 +17,27 @@ def read_data(attrs, selected_attr, target_name):
 
     return data
 
+def balance_data(data, target_feature):
+    random.shuffle(data)
+    target_count = {}
+    for x in data:
+        v = x[target_feature]
+        if v in target_count:
+            target_count[v] +=1
+        else:
+            target_count[v] = 1
+
+    min_value = min(target_count.values())
+    for i in target_count:
+        target_count[i] -= min_value
+
+    for x in data:
+        v = x[target_feature]
+        if target_count[v] > 0:
+            data.remove(x)
+            target_count[v] -= 1
+    
+    return data
 
 def get_attr_or_moda(elem, attr, freq_dict):
     if elem != "":
@@ -74,7 +96,14 @@ def confusion_matrix(predictions, test_y):
 
 def logistic_regression(attributes, selected_attributes, class_name):
     data = read_data(attributes, selected_attributes, class_name)
+
+    # We can try to balance the data before filling it with mean
+    data = balance_data(data, class_name)
+
     data = fill_empty(data)
+
+    
+
     # We divide training ad testing
     train_p = 0.7
     training_amount = int(train_p * len(data))
@@ -92,8 +121,10 @@ def logistic_regression(attributes, selected_attributes, class_name):
 
     # TODO: check how to handle categorical features
     if "sex" in selected_attributes:
-        pdt_x["sex"] = pdt_x["sex"].astype("category")
-        pdt_x = pd.get_dummies(pdt_x)
+        pdt_x["sex"] = pd.Categorical(pdt_x["sex"])
+        # pdt_x = pd.get_dummies(pdt_x)
+        print(pdt_x)
+
 
     # Adding constant to train_x to add the Intercept term
     # https://stats.stackexchange.com/questions/203740/logistic-regression-scikit-learn-vs-statsmodels
@@ -101,6 +132,7 @@ def logistic_regression(attributes, selected_attributes, class_name):
     pdt_y = pd.DataFrame(train_y)
 
     logit_model=sm.Logit(pdt_y,pdt_x.astype(float))
+
     result=logit_model.fit(maxiter=100)
     print(result.summary())
 
@@ -135,8 +167,10 @@ print("#" * 20)
 
 lr, training_data, test_data = logistic_regression(attributes, selected_attributes, class_name)
 
-prob_list = [70, 1, 150]  # age, duration, choleste
+prob_list = [1, 70, 1, 150]  # age, duration, choleste
 print(f'Probabilities for {prob_list}')
-# probabilities = lr.predict_proba(np.array(prob_list).reshape(-1, 1).T)
-# print(f"Probability sigdz = 1, {round(probabilities[0][1], 3)}")
-# print(f"Probability sigdz = 0, {round(probabilities[0][0], 3)}")
+
+#TODO: Aplicar formula de logistic
+probabilities = lr.predict_proba(np.array(prob_list).reshape(-1, 1).T)
+print(f"Probability sigdz = 1, {round(probabilities[0][1], 3)}")
+print(f"Probability sigdz = 0, {round(probabilities[0][0], 3)}")
