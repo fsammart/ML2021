@@ -10,7 +10,7 @@ from tp4.ej2.utils import get_confusion_matrix, get_accuracy, plot_heatmap
 def hierarchical_clustering_program(train, test, train_y, test_y, filename):
 
     clusters_group = [50, 40, 30, 20, 10, 5, 2]
-    with open('./results/hierarchical_clustering_metrics.csv', mode='a+') as f:
+    with open(f'./results/{filename}_metrics.csv', mode='a+') as f:
 
         for clusters in clusters_group:
             # train section
@@ -32,7 +32,7 @@ def hierarchical_clustering_program(train, test, train_y, test_y, filename):
 def k_means_program(train, test, train_y, test_y, filename):
 
     clusters_group = [50, 40, 30, 20, 10, 5, 2]
-    with open('./results/k_means_metrics.csv', mode='a+') as f:
+    with open(f'./results/{filename}_metrics.csv', mode='a+') as f:
 
         for clusters in clusters_group:
             for _ in range(10):
@@ -55,12 +55,12 @@ def k_means_program(train, test, train_y, test_y, filename):
 
 def kohonen_program(train, test, train_y, test_y, filename):
     k_values = [2, 3, 4, 5, 6, 7, 8, 9, 10]
-    with open('./results/kohonen_metrics.csv', mode='a+') as f:
+    with open(f'./results/{filename}_metrics.csv', mode='a+') as f:
 
         for k in k_values:
             feats = 3
             eta = 0.1
-            epochs = 100
+            epochs = 1000
             som = Kohonen(k, k, eta, feats, train, rand_weights=False)
 
             som.train(epochs)
@@ -119,15 +119,14 @@ def run_program(kohonen=False, k_means=False, hc=False, balance=None, remove_dup
 
 
 if __name__ == '__main__':
-    pass
     # run_program(k_means=True, kohonen=False, hc=False, remove_duplicates=True)
     # run_program(k_means=True, kohonen=False, hc=False, balance=None)
     # run_program(k_means=True, kohonen=False, hc=False, balance='sigdz')
-    #
+
     # run_program(k_means=False, kohonen=False, hc=True, remove_duplicates=True)
     # run_program(k_means=False, kohonen=False, hc=True, balance=None)
     # run_program(k_means=False, kohonen=False, hc=True, balance='sigdz')
-
+    #
     # run_program(k_means=False, kohonen=True, hc=False, remove_duplicates=True)
     # run_program(k_means=False, kohonen=True, hc=False, balance=None)
     # run_program(k_means=False, kohonen=True, hc=False, balance='sigdz')
