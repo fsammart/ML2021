@@ -26,6 +26,11 @@ def get_confusion_matrix(predictions, truths):
     return matrix
 
 
+def get_accuracy(confusion_matrix):
+    trues = np.sum(np.diag(confusion_matrix))
+    total = confusion_matrix.sum()
+    return trues / total
+
 def get_precision(confusion_matrix):
     # print(confusion_matrix)
     sum_columns = np.sum(confusion_matrix, axis=0)
