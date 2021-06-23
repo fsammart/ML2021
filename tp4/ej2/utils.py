@@ -135,11 +135,10 @@ def get_confusion_matrix(predictions, truths):
     return matrix
 
 
-def get_precision(confusion_matrix):
-    sum_columns = np.sum(confusion_matrix, axis=0)
-    diagonal = np.diagonal(confusion_matrix)
-    return np.mean(diagonal/sum_columns)
-
+def get_accuracy(confusion_matrix):
+    trues = np.sum(np.diag(confusion_matrix))
+    total = confusion_matrix.sum()
+    return trues/total
 
 def plot_heatmap(matrix, filename, v_min=0, v_max=1052):
     fig, ax = plt.subplots()

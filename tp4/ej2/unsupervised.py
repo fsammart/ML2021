@@ -4,7 +4,7 @@ from tp4.ej2.kohonen import Kohonen
 from tp4.ej2.k_means import KMeans
 from tp4.ej2.hierarchical_clustering import HierarchicalClustering
 from tp4.ej2.preprocessing import load_data, replace_nan, scale_data
-from tp4.ej2.utils import get_confusion_matrix, get_precision, plot_heatmap
+from tp4.ej2.utils import get_confusion_matrix, get_accuracy, plot_heatmap
 
 
 def hierarchical_clustering_program(train, test, train_y, test_y, filename):
@@ -23,7 +23,7 @@ def hierarchical_clustering_program(train, test, train_y, test_y, filename):
             predictions = hc.predict(np.array(test))
 
             confusion_matrix = get_confusion_matrix(predictions, test_y)
-            precision = get_precision(confusion_matrix)
+            precision = get_accuracy(confusion_matrix)
             plot_heatmap(confusion_matrix, f'./results/{filename}_{clusters}_clusters_confusion.jpg')
 
             f.write(f'hierarchical clustering,{clusters},{round(precision, 4)}\n')
@@ -47,7 +47,7 @@ def k_means_program(train, test, train_y, test_y, filename):
                 predictions = k_means.predict(test)
 
                 confusion_matrix = get_confusion_matrix(predictions, test_y)
-                precision = get_precision(confusion_matrix)
+                precision = get_accuracy(confusion_matrix)
                 plot_heatmap(confusion_matrix, f'./results/{filename}_{clusters}_clusters_confusion.jpg')
 
                 f.write(f'k means,{clusters},{round(precision, 4)}\n')
@@ -72,7 +72,7 @@ def kohonen_program(train, test, train_y, test_y, filename):
             predictions = som.predict(np.array(test))
 
             confusion_matrix = get_confusion_matrix(predictions, test_y)
-            precision = get_precision(confusion_matrix)
+            precision = get_accuracy(confusion_matrix)
             plot_heatmap(confusion_matrix, f'./results/{filename}_{k}_clusters_confusion.jpg')
 
             f.write(f'kohonen,{k},{round(precision, 4)}\n')
@@ -119,7 +119,6 @@ def run_program(kohonen=False, k_means=False, hc=False, balance=None, remove_dup
 
 
 if __name__ == '__main__':
-    pass
     # run_program(k_means=True, kohonen=False, hc=False, remove_duplicates=True)
     # run_program(k_means=True, kohonen=False, hc=False, balance=None)
     # run_program(k_means=True, kohonen=False, hc=False, balance='sigdz')
@@ -128,6 +127,6 @@ if __name__ == '__main__':
     # run_program(k_means=False, kohonen=False, hc=True, balance=None)
     # run_program(k_means=False, kohonen=False, hc=True, balance='sigdz')
 
-    # run_program(k_means=False, kohonen=False, hc=True, remove_duplicates=True)
-    # run_program(k_means=False, kohonen=False, hc=True, balance=None)
-    # run_program(k_means=False, kohonen=False, hc=True, balance='sigdz')
+    # run_program(k_means=False, kohonen=True, hc=False, remove_duplicates=True)
+    # run_program(k_means=False, kohonen=True, hc=False, balance=None)
+    # run_program(k_means=False, kohonen=True, hc=False, balance='sigdz')
