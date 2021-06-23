@@ -27,6 +27,8 @@ class Kohonen:
 
         self.eta = None
         self.R = None
+        self.cluster_classifications = None
+        self.cluster_counts = None
 
     def set_radio(self, epoch, epochs):
         self.R = (epochs-epoch)*self.init_R/epochs
@@ -68,34 +70,80 @@ class Kohonen:
             self.set_lr(epoch, epochs)
             self.run_sample()
 
-    def activations(self, filename):
+    def get_activations(self):
         activations = np.zeros((self.k, self.k))
 
         for sample in self.data:
             winner = self.predict_winner(sample)
             activations[winner[0]][winner[1]] += 1
 
-        plt.imshow(np.squeeze(activations), cmap="Blues")
-        plt.colorbar()
-        plt.title("Activations count for each neuron.")
-        plt.savefig(f'./results/{filename}')
-        plt.clf()
+        return activations
 
-    def u_matrix(self, filename):
-        u_matrix = np.zeros((self.k, self.k))
+    def add_cluster_classification(self, labels):
+        self.cluster_counts = np.zeros(shape=(self.k, self.k, 2))
+
+        for i, sample in enumerate(self.data):
+            winner = self.predict_winner(sample)
+            self.cluster_counts[winner[0]][winner[1]][labels[i]] += 1
+
+        self.cluster_classifications = np.zeros(shape=(self.k, self.k))
         for i in range(self.k):
             for j in range(self.k):
-                neighbours = self.get_neighbours(i, j, math.sqrt(2))
-                neigh_weights = np.fromiter(map(
-                    lambda x: self.kohonen[x], neighbours
-                ), dtype=np.float64)
-                distances = np.fromiter(map(
-                    euclidean(self.kohonen[(i, j)]), neigh_weights
-                ), dtype=np.float64)
-                u_matrix[i][j] = np.mean(distances)
+                if self.cluster_counts[i][j][0] >= self.cluster_counts[i][j][1]:
+                    self.cluster_classifications[i][j] = 0
+                else:
+                    self.cluster_classifications[i][j] = 1
 
-        plt.imshow(np.squeeze(u_matrix), cmap="Greys")
-        plt.colorbar()
-        plt.title("U Matrix for SOM")
-        plt.savefig(f'./results/{filename}')
+    def predictor(self, sample):
+        winner = self.predict_winner(sample)
+        return int(self.cluster_classifications[winner[0]][winner[1]])
+
+    def predict(self, samples):
+        return list(map(self.predictor, samples))
+
+    def plot_classification_som(self, filename):
+        fig, ax = plt.subplots()
+        ax.matshow(self.cluster_classifications, cmap=plt.cm.Set3, vmin=0, vmax=1)
+
+        for i, j in np.ndindex(self.cluster_classifications.shape):
+            decision = self.cluster_classifications[i][j]
+            count = self.cluster_counts[i][j][0] + self.cluster_counts[i][j][1]
+            probabilities = f'0 ->{round(self.cluster_counts[i][j][0]/count, 2)}\n1 ->{round(self.cluster_counts[i][j][1]/count, 2)}'
+            ax.text(j, i, f'{decision}\n{probabilities}', va='center', ha='center')
+
+        plt.title("Dominant class for each neuron")
+        plt.savefig(f'./results/{filename}', bbox_inches='tight')
         plt.clf()
+
+    def plot_activations(self, filename):
+        activations = self.get_activations()
+
+        fig, ax = plt.subplots()
+        ax.matshow(activations, cmap=plt.cm.Blues, vmin=0)
+
+        for i, j in np.ndindex(self.cluster_classifications.shape):
+            value = f'{activations[i][j]}'
+            ax.text(j, i, f'{value}', va='center', ha='center')
+
+        plt.title("Activations count for each neuron.")
+        plt.savefig(f'./results/{filename}', bbox_inches='tight')
+        plt.clf()
+
+    # def u_matrix(self, filename):
+    #     u_matrix = np.zeros((self.k, self.k))
+    #     for i in range(self.k):
+    #         for j in range(self.k):
+    #             neighbours = self.get_neighbours(i, j, math.sqrt(2))
+    #             neigh_weights = np.fromiter(map(
+    #                 lambda x: self.kohonen[x], neighbours
+    #             ), dtype=np.float64)
+    #             distances = np.fromiter(map(
+    #                 euclidean(self.kohonen[(i, j)]), neigh_weights
+    #             ), dtype=np.float64)
+    #             u_matrix[i][j] = np.mean(distances)
+    #
+    #     plt.imshow(np.squeeze(u_matrix), cmap="Greys")
+    #     plt.colorbar()
+    #     plt.title("U Matrix for SOM")
+    #     plt.savefig(f'./results/{filename}')
+    #     plt.clf()
