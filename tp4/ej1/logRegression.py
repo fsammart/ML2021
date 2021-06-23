@@ -93,7 +93,8 @@ def confusion_matrix(predictions, test_y):
 def logistic_regression(
         attributes,
         balance=None,
-        remove_duplicates=False
+        remove_duplicates=False,
+        differentiate_replacement=False
 ):
     # data = read_data(attributes, selected_attributes, class_name)
     #
@@ -107,15 +108,16 @@ def logistic_regression(
     # train, test = divide_data(data, training_amount)
     # train_x, train_y = separate_target_variable(train, selected_attributes, class_name)
     # test_x, test_y = separate_target_variable(test, selected_attributes, class_name)
-
+    if balance:
+        balance = 'sigdz'
     label = ['sigdz']
-    dataframe, dataframe_info = load_data('../data/acath.csv', attributes + label, balance=balance)
+    dataframe, dataframe_info = load_data('tp4/data/acath.csv', attributes + label, balance=balance)
     if remove_duplicates:
         with_removed = dataframe.drop_duplicates(subset=attributes)
         print(f'Removed {len(dataframe)-len(with_removed)} duplicates from dataframe.')
         dataframe = with_removed
 
-    replacement_info = replace_nan(dataframe)
+    replacement_info = replace_nan(dataframe, differentiate_label=differentiate_replacement)
     print('Nan values per column in original dataframe')
     print(replacement_info)
 
@@ -154,6 +156,8 @@ def logistic_regression(
     print(f'Variables: {selected_attributes}')
     print(f'Accuracy: {round(score, 3)}')
 
+
+    predictions = pd.DataFrame(predictions)
     matrix_ = confusion_matrix(predictions, test_y )
 
     print(f'Confusion matrix')
@@ -178,7 +182,10 @@ print("#" * 20)
 print("Logistic Regression")
 print("#" * 20)
 
-lr, training_data, test_data = logistic_regression(selected_attributes, remove_duplicates=True)
+lr, training_data, test_data = logistic_regression(selected_attributes,
+ remove_duplicates=True, 
+ balance=True, 
+ differentiate_replacement=True)
 
 prob_list = [1, 70, 1, 150]  # age, duration, choleste
 print(f'Probabilities for {prob_list}')

@@ -19,10 +19,17 @@ def divide_data(data, training_size):
 
 def get_confusion_matrix(predictions, truths):
     matrix = np.zeros(shape=(2, 2))
-    for pred, truth in zip(predictions, truths):
+    print(len(predictions[0]))
+    print(len(truths["sigdz"]))
+    for pred, truth in zip(predictions[0], truths["sigdz"]):
         matrix[truth][pred] += 1
     return matrix
 
+
+def get_accuracy(confusion_matrix):
+    trues = np.sum(np.diag(confusion_matrix))
+    total = confusion_matrix.sum()
+    return trues / total
 
 def get_precision(confusion_matrix):
     # print(confusion_matrix)
