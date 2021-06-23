@@ -119,6 +119,7 @@ def run_program(kohonen=False, k_means=False, hc=False, balance=None, remove_dup
 
 
 if __name__ == '__main__':
+    pass
     # run_program(k_means=True, kohonen=False, hc=False, remove_duplicates=True)
     # run_program(k_means=True, kohonen=False, hc=False, balance=None)
     # run_program(k_means=True, kohonen=False, hc=False, balance='sigdz')
